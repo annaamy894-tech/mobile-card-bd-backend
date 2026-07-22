@@ -106,7 +106,6 @@ export default function ProductDetail() {
       <div style={{ maxWidth: 900, margin: "0 auto", padding: isMobile ? "0 0 70px 0" : "0 0" }}>
         <div style={{ background: "#fff", boxShadow: "0 2px 16px rgba(0,0,0,0.06)", marginBottom: 12 }}>
 
-          {/* GALLERY - White Background */}
           <div style={{ position: "relative", background: "#fff", overflow: "hidden" }}>
             <button onClick={() => navigate(-1)} style={{ position: "absolute", top: 10, left: 10, padding: "5px 12px", borderRadius: 6, border: "none", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", zIndex: 20 }}>← Back</button>
             {savePercent > 0 && (<div style={{ position: "absolute", top: 10, right: 10, background: "#ef4444", color: "#fff", padding: "4px 10px", borderRadius: 20, fontSize: isMobile ? 10 : 11, fontWeight: 800, zIndex: 20 }}>-{savePercent}%</div>)}
@@ -190,4 +189,4 @@ export default function ProductDetail() {
 }
 
 function Info({ icon, title, sub }) { return <div style={{ flex: "1 1 110px", display: "flex", gap: 8 }}><span style={{ fontSize: 20 }}>{icon}</span><div><div style={{ fontWeight: 700, fontSize: 11 }}>{title}</div><div style={{ fontSize: 10, color: "#888" }}>{sub}</div></div></div>; }
-function Badge({ bg, color, children }) { return <span style={{ background: bg, color, color: color, padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700 }}>{children}</span>; }
+function Badge({ bg, color, children }) { return <span style={{ background: bg, color: color, padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700 }}>{children}</span>; }
