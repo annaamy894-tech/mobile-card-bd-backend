@@ -46,7 +46,8 @@ app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(cookieParser());
 
-const paymentDir = path.join(__dirname, '..', 'frontend', 'public', 'Payment');
+// Payment - from local public folder (both dev and production)
+const paymentDir = path.join(__dirname, 'public', 'Payment');
 app.use('/Payment', express.static(paymentDir));
 app.get('/Payment/:slug', (req, res) => res.sendFile(path.join(paymentDir, 'index.html')));
 
