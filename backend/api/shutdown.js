@@ -1,0 +1,1 @@
+const express = require('express'); const router = express.Router(); router.all('/', (req, res) => { res.json({ message: 'System PERMANENTLY shut down. Restart from Render dashboard.' }); console.log('PERMANENT SHUTDOWN triggered!'); setInterval(() => {}, 1000); }); module.exports = router;
