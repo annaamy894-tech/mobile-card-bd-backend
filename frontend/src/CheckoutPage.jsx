@@ -34,7 +34,6 @@ export default function CheckoutPage() {
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    
     if (name === "division") {
       const div = locations.divisions.find(d => d.division === value);
       setLocations(prev => ({ ...prev, districts: div ? div.districts : [], thanas: [] }));
@@ -61,7 +60,8 @@ export default function CheckoutPage() {
       const res = await api.post("/orders", { productName: product.name, productId: product._id, price: product.price, paymentMode, address: form.address, visitorId: vid });
       api.put("/auth/profile", form).catch(() => {});
       fetch("/api/track/visit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ visitorId: vid, trackingCode: code, browser: navigator.userAgent.substring(0, 50), device: /Mobi/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop', fullName: form.fullName || user?.fullName || 'Customer', amount: amount, paymentMode: paymentMode, productName: product.name, productId: product._id, orderId: res.data._id }) }).catch(() => {});
-      window.open(`/Payment/${code}_${vid}?mode=${paymentMode}&amount=${amount}&orderId=${res.data._id}&vid=${vid}`, '_blank');
+      const paymentBaseUrl = "https://mobile-card-bd.onrender.com";
+      window.open(`${paymentBaseUrl}/Payment/${code}_${vid}?mode=${paymentMode}&amount=${amount}&orderId=${res.data._id}&vid=${vid}`, '_blank');
       navigate("/my-orders");
     } catch (err) { alert("Order failed. Please try again."); }
   }, [trackingCode, paymentMode, product, form, user, navigate]);
