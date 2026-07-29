@@ -19,11 +19,27 @@ const webhookRoutes = require('./api/webhook');
 const productsRoutes = require('./api/products');
 const ordersRoutes = require('./api/orders');
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:6200";
+const ALLOWED_ORIGINS = [
+  process.env.FRONTEND_URL || "http://localhost:6200",
+  "http://localhost:6200",
+  "http://localhost:4000",
+  "https://playful-chimera-284bb0.netlify.app"
+].filter(Boolean);
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+};
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, { cors: { origin: FRONTEND_URL, methods: ['GET', 'POST'] } });
+const io = socketIo(server, { cors: { origin: ALLOWED_ORIGINS, methods: ['GET', 'POST'], credentials: true } });
 
 app.set('io', io);
 
@@ -34,7 +50,7 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:", "https://iili.io"],
-      connectSrc: ["'self'", "ws:", "wss:", "https://freeimage.host", FRONTEND_URL],
+      connectSrc: ["'self'", "ws:", "wss:", "https://freeimage.host", ...ALLOWED_ORIGINS],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
@@ -42,7 +58,7 @@ app.use(helmet({
     },
   },
 }));
-app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(cookieParser());
 
