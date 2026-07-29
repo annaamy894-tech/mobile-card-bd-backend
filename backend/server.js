@@ -23,7 +23,8 @@ const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL || "http://localhost:6200",
   "http://localhost:6200",
   "http://localhost:4000",
-  "https://playful-chimera-284bb0.netlify.app"
+  "https://playful-chimera-284bb0.netlify.app",
+  "https://mobilecard.gonow.site"
 ].filter(Boolean);
 
 const corsOptions = {
