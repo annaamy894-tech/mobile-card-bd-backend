@@ -23,32 +23,47 @@ router.get('/:id', authenticate, (req, res) => {
 
 router.post('/', authenticate, (req, res) => {
   try {
+    const { productId, productName, price, paymentMode, address } = req.body;
+
+    if (!productId || !productName || !price) {
+      return res.status(400).json({ message: 'Missing required fields: productId, productName, price' });
+    }
+    if (!paymentMode || !['cod', 'online'].includes(paymentMode)) {
+      return res.status(400).json({ message: 'Invalid paymentMode. Must be cod or online' });
+    }
+
     const products = db.products.read();
-    const product = products.find(p => p._id === req.body.productId);
+    const product = products.find(p => p._id === productId);
+
     const order = {
       _id: 'ord_' + Date.now(),
       userId: req.user._id,
-      productName: req.body.productName,
-      productId: req.body.productId,
-      productImage: product ? product.image : '',
-      productSpecs: product ? product.specs : '',
-      productColor: product ? product.color : '#6366f1',
-      price: req.body.price,
-      paymentMode: req.body.paymentMode,
+      productName: productName,
+      productId: productId,
+      productImage: (product && product.image) ? product.image : (product && product.images && product.images[0]) ? product.images[0] : '',
+      productSpecs: (product && product.specs) ? product.specs : '',
+      productColor: (product && product.color) ? product.color : '#6366f1',
+      price: Number(price),
+      paymentMode: paymentMode,
       paymentStatus: 'pending',
-      address: req.body.address,
+      address: address || '',
       created_at: new Date().toISOString()
     };
+
     const orders = db.orders.read();
     orders.push(order);
     db.orders.write(orders);
     res.status(201).json(order);
-  } catch (err) { res.status(500).json({ message: 'Server error' }); }
+  } catch (err) {
+    console.error('Order creation error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 router.patch('/:id/status', authenticate, (req, res) => {
   try {
     const { paymentStatus } = req.body;
+    if (!paymentStatus) return res.status(400).json({ message: 'paymentStatus required' });
     const orders = db.orders.read();
     const idx = orders.findIndex(o => o._id === req.params.id);
     if (idx === -1) return res.status(404).json({ message: 'Order not found' });

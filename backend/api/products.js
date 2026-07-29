@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Product, Comment } = require('../models');
+const { authenticate } = require('../middleware');
 
 router.get('/', (req, res) => {
   try { res.json(Product.find(req.query)); }
@@ -21,7 +22,7 @@ router.get('/:id/comments', (req, res) => {
   catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.post('/:id/comments', (req, res) => {
+router.post('/:id/comments', authenticate, (req, res) => {
   try {
     const { name, text } = req.body;
     if (!name || !text) return res.status(400).json({ message: 'Name and text required' });

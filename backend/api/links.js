@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { Link } = require('../models');
+const { authenticate } = require('../middleware');
 
-router.get('/', (req, res) => {
+router.get('/', authenticate, (req, res) => {
   try { res.json(Link.find()); }
   catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', authenticate, (req, res) => {
   try {
     const link = Link.findById(req.params.id);
     if (!link) return res.status(404).json({ message: 'Not found' });
@@ -15,17 +16,17 @@ router.get('/:id', (req, res) => {
   } catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.post('/', (req, res) => {
+router.post('/', authenticate, (req, res) => {
   try { const link = Link.create(req.body); res.status(201).json(link); }
   catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', authenticate, (req, res) => {
   try { const link = Link.findByIdAndUpdate(req.params.id, req.body); res.json(link); }
   catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', authenticate, (req, res) => {
   try { Link.findByIdAndDelete(req.params.id); res.json({ message: 'Deleted' }); }
   catch (err) { res.status(500).json({ message: 'Server error' }); }
 });
