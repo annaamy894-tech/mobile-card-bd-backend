@@ -12,7 +12,7 @@ const SQUARE_IMG = { width: "100%", height: "100%", aspectRatio: "1/1", objectFi
 
 const defaultForm = {
   name: "", brand: "Apple", price: "", originalPrice: "", specs: "",
-  rating: "4.5", images: [], warranty: "No Warranty", returnPolicy: "No Return",
+  rating: "4.5", images: [], color: "#6366f1", warranty: "No Warranty", returnPolicy: "No Return",
   description: "", condition: "Used", batteryHealth: "", ram: "", storage: "",
   deviceColor: "", screenSize: ""
 };
@@ -86,7 +86,7 @@ export default function AddProduct() {
     const imgs = p.images || (p.image ? [p.image] : []);
     setForm({
       name: p.name || "", brand: p.brand || "Apple", price: p.price || "", originalPrice: p.originalPrice || "",
-      specs: p.specs || "", rating: p.rating || "4.5", images: imgs,
+      specs: p.specs || "", rating: p.rating || "4.5", images: imgs, color: p.color || "#6366f1",
       warranty: p.warranty || "No Warranty", returnPolicy: p.returnPolicy || "No Return",
       description: p.description || "", condition: p.condition || "Used",
       batteryHealth: p.batteryHealth || "", ram: p.ram || "", storage: p.storage || "",
@@ -102,8 +102,6 @@ export default function AddProduct() {
     if (!form.price || !form.originalPrice) { setMsg("Price and Original Price are required"); return; }
     const payload = {
       ...form,
-      image: form.images[0] || "",
-      color: "#6366f1",
       views: editingId ? undefined : 0
     };
     const apiCall = editingId ? api.put(`/admin/products/${editingId}`, payload) : api.post("/admin/products", payload);

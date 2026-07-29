@@ -1,9 +1,7 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.PROD
-  ? "https://mobile-card-bd.onrender.com/api"
-  : "/api";
+const baseURL = "https://mobile-card-bd-backend.onrender.com/api";
 
-const api = axios.create({ baseURL, withCredentials: false });
+const api = axios.create({ baseURL, withCredentials: true });
 
 export default api;

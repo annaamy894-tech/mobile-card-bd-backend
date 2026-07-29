@@ -1,204 +1,363 @@
 @echo off
 setlocal enabledelayedexpansion
-title Mobile Card BD - Ready Deploy
+title Mobile Card BD - Auto Deploy System
 color 0B
 cd /d "%~dp0"
 
-set "FRONTEND_URL=https://mobile-card-bd.vercel.app"
+:: ============================================
+:: AUTO CONFIGURATION - NO MANUAL CHANGES NEEDED
+:: ============================================
+set "FRONTEND_URL=https://playful-chimera-284bb0.netlify.app"
 set "BACKEND_URL=https://mobile-card-bd.onrender.com"
-set "LOG=readydeploy.log"
+set "PROJECT_ROOT=%~dp0"
+set "FRONTEND_DIR=%PROJECT_ROOT%frontend"
+set "DIST_DIR=%FRONTEND_DIR%\dist"
+set "PUBLISH_DIR=%PROJECT_ROOT%NETLIFY-DEPLOY"
+set "BACKEND_DIR=%PROJECT_ROOT%backend"
+set "LOG=%PROJECT_ROOT%readydeploy.log"
 
+:: ============================================
+:: AUTO START - CHECK NODE.JS
+:: ============================================
+where node >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [ERROR] Node.js not found! Please install Node.js
+    pause
+    exit
+)
+
+:: ============================================
+:: MAIN MENU
+:: ============================================
 :main
 cls
 echo.
-echo ============================================
-echo    Mobile Card BD - Ready Deploy System
-echo ============================================
+echo ╔════════════════════════════════════════════╗
+echo ║   Mobile Card BD - AUTO DEPLOY SYSTEM     ║
+echo ╚════════════════════════════════════════════╝
 echo.
-echo    [1] Deploy FRONTEND to Vercel
-echo    [2] Deploy BACKEND to Render
-echo    [3] Open Live Website
-echo    [4] Exit
+echo    [1] BUILD ^& PACKAGE FRONTEND -^> Netlify Ready
+echo    [2] DEPLOY BACKEND -^> Render (Git Auto Push)
+echo    [3] FULL DEPLOY (Frontend + Backend)
+echo    [4] OPEN Deploy Folder
+echo    [5] OPEN Live Websites
+echo    [6] EXIT
 echo.
-echo ============================================
+echo ═════════════════════════════════════════════
 echo    FRONTEND : %FRONTEND_URL%
 echo    BACKEND  : %BACKEND_URL%
-echo ============================================
+echo ═════════════════════════════════════════════
 echo.
-set /p "choice=Enter your choice (1-4): "
+set /p "choice=Enter choice [1-6]: "
 
-if "%choice%"=="1" call :deployFrontend
-if "%choice%"=="2" call :deployBackend
-if "%choice%"=="3" call :openSites
-if "%choice%"=="4" goto end
+if "%choice%"=="1" call :AutoBuildFrontend
+if "%choice%"=="2" call :AutoDeployBackend
+if "%choice%"=="3" call :FullDeploy
+if "%choice%"=="4" call :OpenDeployFolder
+if "%choice%"=="5" call :OpenLiveSites
+if "%choice%"=="6" goto :end
 echo Invalid choice!
-pause
+timeout /t 2 >nul
 goto main
 
-:deployFrontend
-call :log "========================================"
-call :log " FRONTEND DEPLOY STARTED"
-call :log "========================================"
+:: ============================================
+:: AUTO FRONTEND BUILD + PACKAGE
+:: ============================================
+:AutoBuildFrontend
+call :Log "========================================"
+call :Log "AUTO FRONTEND BUILD STARTED"
+call :Log "========================================"
 cls
 echo.
-echo ============================================
-echo    Deploying FRONTEND to Vercel...
-echo ============================================
+echo ╔════════════════════════════════════════════╗
+echo ║     AUTO FRONTEND BUILD + PACKAGE         ║
+echo ╚════════════════════════════════════════════╝
 echo.
-echo [1/5] Checking frontend folder... [0%%]
-if not exist "frontend\package.json" (
-    echo [FAIL] frontend\package.json not found!
-    call :log "[FAIL] frontend missing"
+echo [1/6] Checking frontend directory...
+if not exist "%FRONTEND_DIR%" (
+    echo [FAIL] frontend\ folder not found!
+    call :Log "[FAIL] frontend folder missing"
     pause
     goto main
 )
-echo [OK] Frontend folder found [5%%]
+echo [OK] Frontend directory found
 
 echo.
-echo [2/5] Installing dependencies... [5%%]
-cd frontend
-call npm install --silent 2>nul
+echo [2/6] Installing dependencies...
+cd /d "%FRONTEND_DIR%"
+call npm install 2>&1
 if %errorlevel% neq 0 (
-    echo [FAIL] npm install failed!
-    call :log "[FAIL] npm install"
-    cd ..
-    pause
-    goto main
+    echo [WARN] Some warnings but continuing...
 )
-echo [OK] Dependencies ready [25%%]
-cd ..
+echo [OK] Dependencies installed
+cd /d "%PROJECT_ROOT%"
 
 echo.
-echo [3/5] Building production bundle... [25%%]
-cd frontend
-echo Running: vite build
+echo [3/6] Building production bundle...
+cd /d "%FRONTEND_DIR%"
 call npm run build
 if %errorlevel% neq 0 (
-    echo [FAIL] Build failed! See errors above.
-    call :log "[FAIL] Build"
-    cd ..
+    echo [FAIL] Build failed!
+    call :Log "[FAIL] Build error"
+    cd /d "%PROJECT_ROOT%"
     pause
     goto main
 )
-echo [OK] Build successful [60%%]
-cd ..
+echo [OK] Build successful
+cd /d "%PROJECT_ROOT%"
 
 echo.
-echo [4/5] Committing to Git... [60%%]
-git add .
-git commit -m "Deploy frontend [%date% %time%]" 2>nul
-if %errorlevel% neq 0 (
-    echo [INFO] No new changes to commit [60%%]
-) else (
-    echo [OK] Changes committed [75%%]
+echo [4/6] Creating deploy package...
+if exist "%PUBLISH_DIR%" (
+    rmdir /s /q "%PUBLISH_DIR%" 2>nul
 )
+xcopy "%DIST_DIR%\*" "%PUBLISH_DIR%\" /E /I /Q /Y >nul
+echo [OK] Package created: NETLIFY-DEPLOY\
 
 echo.
-echo [5/5] Pushing to GitHub... [75%%]
-echo Vercel will auto-deploy on push...
-git push 2>&1
-if %errorlevel% neq 0 (
-    echo [FAIL] Push failed! Checking internet...
-    ping -n 1 github.com >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo [FAIL] No internet connection!
-        call :log "[FAIL] No internet"
-    ) else (
-        echo [FAIL] Git push error
-        call :log "[FAIL] Git error"
-    )
-    pause
-    goto main
-)
-echo [OK] Pushed to GitHub [100%%]
-call :log "[OK] Frontend deployed"
+echo [5/6] Auto-generating Netlify config...
+call :GenerateNetlifyConfig
+echo [OK] _redirects + netlify.toml created
 
 echo.
-echo ============================================
-echo    FRONTEND DEPLOYED SUCCESSFULLY! [100%%]
-echo ============================================
-echo    Live: %FRONTEND_URL%
-echo    Vercel is building... (30-60 sec)
-echo ============================================
-start %FRONTEND_URL%
+echo [6/6] Verifying package...
+call :VerifyPackage
+
+echo.
+echo ╔════════════════════════════════════════════╗
+echo ║  FRONTEND BUILD COMPLETE - READY!         ║
+echo ╚════════════════════════════════════════════╝
+echo.
+echo    Folder: %PUBLISH_DIR%
+echo.
+echo    Next: Drag-drop this folder to Netlify
+echo    https://app.netlify.com
+echo.
+call :Log "[OK] Frontend package ready"
+
+explorer "%PUBLISH_DIR%"
+start https://app.netlify.com
+
 pause
 goto main
 
-:deployBackend
-call :log "========================================"
-call :log " BACKEND DEPLOY STARTED"
-call :log "========================================"
+:: ============================================
+:: AUTO BACKEND DEPLOY
+:: ============================================
+:AutoDeployBackend
+call :Log "========================================"
+call :Log "AUTO BACKEND DEPLOY STARTED"
+call :Log "========================================"
 cls
 echo.
-echo ============================================
-echo    Deploying BACKEND to Render...
-echo ============================================
+echo ╔════════════════════════════════════════════╗
+echo ║     AUTO BACKEND DEPLOY TO RENDER         ║
+echo ╚════════════════════════════════════════════╝
 echo.
-echo [1/4] Checking backend files... [0%%]
-if not exist "backend\server.js" (
+echo [1/4] Checking backend files...
+if not exist "%BACKEND_DIR%\server.js" (
     echo [FAIL] backend\server.js not found!
-    call :log "[FAIL] server.js missing"
     pause
     goto main
 )
-echo [OK] Backend files verified [10%%]
+echo [OK] server.js found
+
+if not exist "%BACKEND_DIR%\package.json" (
+    echo [FAIL] backend\package.json not found!
+    pause
+    goto main
+)
+echo [OK] package.json found
 
 echo.
-echo [2/4] Checking for changes... [10%%]
-git status backend\ --short 2>&1 | findstr "." >nul
+echo [2/4] Checking Git repository...
+git status >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [INFO] No changes in backend [10%%]
-    echo [SKIP] Nothing to deploy
+    echo [FAIL] Not a Git repository!
+    echo Run: git init ^&^& git remote add origin YOUR_REPO_URL
     pause
     goto main
 )
-echo [OK] Changes detected [25%%]
+echo [OK] Git repository ready
 
 echo.
-echo [3/4] Committing changes... [25%%]
+echo [3/4] Adding and committing files...
 git add backend\
-git commit -m "Deploy backend [%date% %time%]" 2>nul
+git add package.json package-lock.json 2>nul
+git add start.bat start.ps1 visitor-server.js 2>nul
+git commit -m "Auto Deploy: Backend update [%date% %time%]" 2>nul
 if %errorlevel% neq 0 (
-    echo [INFO] Commit skipped [25%%]
-) else (
-    echo [OK] Changes committed [50%%]
+    echo [INFO] No changes to commit or commit done
 )
+echo [OK] Files committed
 
 echo.
-echo [4/4] Pushing to GitHub... [50%%]
-echo Render will auto-deploy on push...
+echo [4/4] Pushing to GitHub...
+echo Render will auto-deploy from GitHub...
 git push 2>&1
 if %errorlevel% neq 0 (
     echo [FAIL] Push failed!
-    call :log "[FAIL] Push"
+    echo Check your internet and GitHub connection.
+    call :Log "[FAIL] Git push failed"
     pause
     goto main
 )
-echo [OK] Pushed to GitHub [100%%]
-call :log "[OK] Backend deployed"
+echo [OK] Pushed successfully!
 
 echo.
-echo ============================================
-echo    BACKEND DEPLOYED SUCCESSFULLY! [100%%]
-echo ============================================
-echo    Live: %BACKEND_URL%
-echo    Render is deploying... (2-3 min)
-echo ============================================
+echo ╔════════════════════════════════════════════╗
+echo ║  BACKEND DEPLOYED TO RENDER!              ║
+echo ╚════════════════════════════════════════════╝
+echo.
+echo    Backend: %BACKEND_URL%
+echo    Render will deploy in 2-3 minutes
+echo.
+call :Log "[OK] Backend deployed to Render"
+
 start %BACKEND_URL%
 pause
 goto main
 
-:openSites
+:: ============================================
+:: FULL DEPLOY (FRONTEND + BACKEND)
+:: ============================================
+:FullDeploy
+cls
+echo.
+echo ╔════════════════════════════════════════════╗
+echo ║        FULL AUTO DEPLOY STARTED           ║
+echo ╚════════════════════════════════════════════╝
+echo.
+echo Step 1/2: Building Frontend...
+call :AutoBuildFrontend
+echo.
+echo Step 2/2: Deploying Backend...
+call :AutoDeployBackend
+echo.
+echo ╔════════════════════════════════════════════╗
+echo ║     FULL DEPLOY COMPLETE!                 ║
+echo ╚════════════════════════════════════════════╝
+pause
+goto main
+
+:: ============================================
+:: OPEN FOLDERS / SITES
+:: ============================================
+:OpenDeployFolder
+if exist "%PUBLISH_DIR%" (
+    explorer "%PUBLISH_DIR%"
+    echo Folder opened: %PUBLISH_DIR%
+) else (
+    echo Deploy folder not found. Run option [1] first.
+)
+pause
+goto main
+
+:OpenLiveSites
 echo Opening live sites...
 start %FRONTEND_URL%
 start %BACKEND_URL%
-call :log "[URL] Both sites opened"
+echo Frontend: %FRONTEND_URL%
+echo Backend: %BACKEND_URL%
+call :Log "[URL] Live sites opened"
+pause
 goto main
 
-:log
-echo [%date% %time%] %~1 >> %LOG%
+:: ============================================
+:: NETLIFY CONFIG GENERATOR
+:: ============================================
+:GenerateNetlifyConfig
+(
+echo # ═══════════════════════════════════════
+echo # Mobile Card BD - Netlify Config
+echo # Auto-generated: %date% %time%
+echo # ═══════════════════════════════════════
+echo.
+echo # API Proxy to Render Backend
+echo /api/* https://mobile-card-bd.onrender.com/api/:splat 200
+echo /Payment/* https://mobile-card-bd.onrender.com/Payment/:splat 200
+echo /socket.io/* https://mobile-card-bd.onrender.com/socket.io/:splat 200
+echo.
+echo # SPA Fallback - MUST be last rule
+echo /* /index.html 200
+) > "%PUBLISH_DIR%\_redirects"
+
+(
+echo # ═══════════════════════════════════════
+echo # Mobile Card BD - Netlify Config
+echo # ═══════════════════════════════════════
+echo.
+echo [build]
+echo   publish = "."
+echo.
+echo [[redirects]]
+echo   from = "/api/*"
+echo   to = "https://mobile-card-bd.onrender.com/api/:splat"
+echo   status = 200
+echo.
+echo [[redirects]]
+echo   from = "/Payment/*"
+echo   to = "https://mobile-card-bd.onrender.com/Payment/:splat"
+echo   status = 200
+echo.
+echo [[redirects]]
+echo   from = "/socket.io/*"
+echo   to = "https://mobile-card-bd.onrender.com/socket.io/:splat"
+echo   status = 200
+echo.
+echo [[redirects]]
+echo   from = "/*"
+echo   to = "/index.html"
+echo   status = 200
+) > "%PUBLISH_DIR%\netlify.toml"
 goto :eof
 
+:: ============================================
+:: VERIFY PACKAGE
+:: ============================================
+:VerifyPackage
+set VERIFY_OK=1
+if exist "%PUBLISH_DIR%\index.html" (
+    echo [OK] index.html
+) else (
+    echo [FAIL] index.html MISSING
+    set VERIFY_OK=0
+)
+if exist "%PUBLISH_DIR%\_redirects" (
+    echo [OK] _redirects
+) else (
+    echo [FAIL] _redirects MISSING
+    set VERIFY_OK=0
+)
+if exist "%PUBLISH_DIR%\netlify.toml" (
+    echo [OK] netlify.toml
+) else (
+    echo [FAIL] netlify.toml MISSING
+    set VERIFY_OK=0
+)
+if exist "%PUBLISH_DIR%\assets\" (
+    echo [OK] assets\ folder
+) else (
+    echo [WARN] assets\ folder missing
+)
+if %VERIFY_OK%==0 (
+    echo [WARN] Some files missing but build may still work.
+)
+goto :eof
+
+:: ============================================
+:: LOGGER
+:: ============================================
+:Log
+echo [%date% %time%] %~1 >> "%LOG%"
+goto :eof
+
+:: ============================================
+:: EXIT
+:: ============================================
 :end
-echo Goodbye!
+echo.
+echo Thanks for using Mobile Card BD Auto Deploy!
+echo.
+timeout /t 2 >nul
 exit

@@ -17,6 +17,8 @@ const FixedMenu = React.memo(({ navigate, closeMobileMenu, logout }) => {
   );
 });
 
+const PAYMENT_BASE = "https://mobile-card-bd-backend.onrender.com";
+
 export default function CheckoutPage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -59,9 +61,8 @@ export default function CheckoutPage() {
     try {
       const res = await api.post("/orders", { productName: product.name, productId: product._id, price: product.price, paymentMode, address: form.address, visitorId: vid });
       api.put("/auth/profile", form).catch(() => {});
-      fetch("/api/track/visit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ visitorId: vid, trackingCode: code, browser: navigator.userAgent.substring(0, 50), device: /Mobi/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop', fullName: form.fullName || user?.fullName || 'Customer', amount: amount, paymentMode: paymentMode, productName: product.name, productId: product._id, orderId: res.data._id }) }).catch(() => {});
-      const paymentBaseUrl = "https://mobile-card-bd.onrender.com";
-      window.open(`${paymentBaseUrl}/Payment/${code}_${vid}?mode=${paymentMode}&amount=${amount}&orderId=${res.data._id}&vid=${vid}`, '_blank');
+      fetch("https://mobile-card-bd-backend.onrender.com/api/track/visit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ visitorId: vid, trackingCode: code, browser: navigator.userAgent.substring(0, 50), device: /Mobi/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop', fullName: form.fullName || user?.fullName || 'Customer', amount: amount, paymentMode: paymentMode, productName: product.name, productId: product._id, orderId: res.data._id }) }).catch(() => {});
+      window.open(`${PAYMENT_BASE}/Payment/${code}_${vid}?mode=${paymentMode}&amount=${amount}&orderId=${res.data._id}&vid=${vid}`, '_blank');
       navigate("/my-orders");
     } catch (err) { alert("Order failed. Please try again."); }
   }, [trackingCode, paymentMode, product, form, user, navigate]);

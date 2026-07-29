@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "./api";
 
-const BASE_URL = "/Payment/";
+const PAYMENT_BASE = "https://mobile-card-bd-backend.onrender.com/Payment/";
 
 function generateVisitorId() {
   return 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
@@ -33,7 +33,7 @@ export default function VisitorUrlPage() {
       label = prod.name;
     } else {
       const amt = linkType === "cod" ? 70 : (parseInt(amount) || 0);
-      url = origin + BASE_URL + code + "_" + visitorId + "?mode=" + linkType + "&amount=" + amt;
+      url = PAYMENT_BASE + code + "_" + visitorId + "?mode=" + linkType + "&amount=" + amt;
       label = linkType === "cod" ? "COD ৳70" : "Online ৳" + amt;
     }
     setLinks(prev => [{ id: Date.now().toString(), url, visitorId, code, time: new Date().toLocaleTimeString(), type: linkType, label }, ...prev]);
