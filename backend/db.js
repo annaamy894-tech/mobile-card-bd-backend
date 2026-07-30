@@ -6,19 +6,23 @@ const client = createClient({
   authToken: process.env.TURSO_TOKEN
 });
 
+const TABLES = [
+  `CREATE TABLE IF NOT EXISTS users (_id TEXT PRIMARY KEY, fullName TEXT, username TEXT, email TEXT, password TEXT, role TEXT, status TEXT, trackingCode TEXT, created_at TEXT, phone TEXT, building TEXT, locality TEXT, region TEXT, city TEXT, area TEXT, address TEXT, division TEXT, district TEXT, thana TEXT)`,
+  `CREATE TABLE IF NOT EXISTS links (_id TEXT PRIMARY KEY, category TEXT, trackingCode TEXT, pageUrl TEXT, buttonName TEXT, location TEXT, total_clicks INTEGER DEFAULT 0, created_at TEXT)`,
+  `CREATE TABLE IF NOT EXISTS sessions (_id TEXT PRIMARY KEY, trackingCode TEXT, visitorId TEXT, ip TEXT, browser TEXT, deviceType TEXT, status TEXT, isLive INTEGER DEFAULT 0, entryUrl TEXT, currentUrl TEXT, lastActivity TEXT, clicks INTEGER DEFAULT 0, userName TEXT, formData TEXT, adminStatus TEXT, lastMessage TEXT, timestamp TEXT)`,
+  `CREATE TABLE IF NOT EXISTS trash (_id TEXT PRIMARY KEY, trackingCode TEXT, originalId TEXT, activity TEXT, systemData TEXT, deletedAt TEXT)`,
+  `CREATE TABLE IF NOT EXISTS menuItems (_id TEXT PRIMARY KEY, buttonName TEXT, pageUrl TEXT, location TEXT, created_at TEXT)`,
+  `CREATE TABLE IF NOT EXISTS routeLogs (_id TEXT PRIMARY KEY, visitorId TEXT, changedBy TEXT, oldUrl TEXT, newUrl TEXT, changedAt TEXT)`,
+  `CREATE TABLE IF NOT EXISTS clicks (_id TEXT PRIMARY KEY, trackingCode TEXT, visitorId TEXT, ip TEXT, clickedAt TEXT)`,
+  `CREATE TABLE IF NOT EXISTS products (_id TEXT PRIMARY KEY, name TEXT, brand TEXT, price REAL, originalPrice REAL, condition TEXT, specs TEXT, rating REAL, image TEXT, images TEXT, color TEXT, deviceColor TEXT, screenSize TEXT, ram TEXT, storage TEXT, batteryHealth TEXT, warranty TEXT, returnPolicy TEXT, description TEXT, views INTEGER DEFAULT 0, created_at TEXT)`,
+  `CREATE TABLE IF NOT EXISTS comments (_id TEXT PRIMARY KEY, productId TEXT, name TEXT, text TEXT, created_at TEXT)`,
+  `CREATE TABLE IF NOT EXISTS orders (_id TEXT PRIMARY KEY, userId TEXT, productName TEXT, productId TEXT, productImage TEXT, productSpecs TEXT, productColor TEXT, price REAL, paymentMode TEXT, paymentStatus TEXT DEFAULT 'pending', address TEXT, created_at TEXT)`
+];
+
 async function initDB() {
-  await client.execute(`
-    CREATE TABLE IF NOT EXISTS users (_id TEXT PRIMARY KEY, fullName TEXT, username TEXT, email TEXT, password TEXT, role TEXT, status TEXT, trackingCode TEXT, created_at TEXT, phone TEXT, building TEXT, locality TEXT, region TEXT, city TEXT, area TEXT, address TEXT, division TEXT, district TEXT, thana TEXT);
-    CREATE TABLE IF NOT EXISTS links (_id TEXT PRIMARY KEY, category TEXT, trackingCode TEXT, pageUrl TEXT, buttonName TEXT, location TEXT, total_clicks INTEGER DEFAULT 0, created_at TEXT);
-    CREATE TABLE IF NOT EXISTS sessions (_id TEXT PRIMARY KEY, trackingCode TEXT, visitorId TEXT, ip TEXT, browser TEXT, deviceType TEXT, status TEXT, isLive INTEGER DEFAULT 0, entryUrl TEXT, currentUrl TEXT, lastActivity TEXT, clicks INTEGER DEFAULT 0, userName TEXT, formData TEXT, adminStatus TEXT, lastMessage TEXT, timestamp TEXT);
-    CREATE TABLE IF NOT EXISTS trash (_id TEXT PRIMARY KEY, trackingCode TEXT, originalId TEXT, activity TEXT, systemData TEXT, deletedAt TEXT);
-    CREATE TABLE IF NOT EXISTS menuItems (_id TEXT PRIMARY KEY, buttonName TEXT, pageUrl TEXT, location TEXT, created_at TEXT);
-    CREATE TABLE IF NOT EXISTS routeLogs (_id TEXT PRIMARY KEY, visitorId TEXT, changedBy TEXT, oldUrl TEXT, newUrl TEXT, changedAt TEXT);
-    CREATE TABLE IF NOT EXISTS clicks (_id TEXT PRIMARY KEY, trackingCode TEXT, visitorId TEXT, ip TEXT, clickedAt TEXT);
-    CREATE TABLE IF NOT EXISTS products (_id TEXT PRIMARY KEY, name TEXT, brand TEXT, price REAL, originalPrice REAL, condition TEXT, specs TEXT, rating REAL, image TEXT, images TEXT, color TEXT, deviceColor TEXT, screenSize TEXT, ram TEXT, storage TEXT, batteryHealth TEXT, warranty TEXT, returnPolicy TEXT, description TEXT, views INTEGER DEFAULT 0, created_at TEXT);
-    CREATE TABLE IF NOT EXISTS comments (_id TEXT PRIMARY KEY, productId TEXT, name TEXT, text TEXT, created_at TEXT);
-    CREATE TABLE IF NOT EXISTS orders (_id TEXT PRIMARY KEY, userId TEXT, productName TEXT, productId TEXT, productImage TEXT, productSpecs TEXT, productColor TEXT, price REAL, paymentMode TEXT, paymentStatus TEXT DEFAULT 'pending', address TEXT, created_at TEXT);
-  `);
+  for (const sql of TABLES) {
+    try { await client.execute(sql); } catch (e) { console.error('Table init error:', e.message); }
+  }
   console.log('Turso DB ready');
 }
 
