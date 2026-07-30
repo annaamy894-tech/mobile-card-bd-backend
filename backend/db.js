@@ -30,17 +30,17 @@ async function initDB() {
   console.log('Turso DB ready');
 }
 
-function rowToObj(row) {
+function rowToObj(row, columns) {
   if (!row) return null;
   const obj = {};
-  for (const key of Object.keys(row)) {
-    let val = row[key];
-    if ((key === 'formData' || key === 'systemData' || key === 'images') && typeof val === 'string') {
-      try { val = JSON.parse(val); } catch { val = (key === 'images') ? [] : {}; }
+  columns.forEach((col, i) => {
+    let val = row[i];
+    if ((col === 'formData' || col === 'systemData' || col === 'images') && typeof val === 'string') {
+      try { val = JSON.parse(val); } catch { val = (col === 'images') ? [] : {}; }
     }
-    if (key === 'isLive') val = val === 1 || val === true;
-    obj[key] = val;
-  }
+    if (col === 'isLive') val = val === 1 || val === true;
+    obj[col] = val;
+  });
   return obj;
 }
 
@@ -68,12 +68,12 @@ function buildWhere(f) {
 async function readAll(table, filter) {
   const { where, args } = buildWhere(filter);
   const rs = await client.execute({ sql: `SELECT * FROM ${table} ${where}`, args });
-  return rs.rows.map(rowToObj);
+  return rs.rows.map(row => rowToObj(row, rs.columns));
 }
 
 async function findById(table, id) {
   const rs = await client.execute({ sql: `SELECT * FROM ${table} WHERE _id = ?`, args: [id] });
-  return rowToObj(rs.rows[0]);
+  return rowToObj(rs.rows[0], rs.columns);
 }
 
 async function insertOne(table, data) {
@@ -104,7 +104,7 @@ async function deleteOne(table, id) {
 async function countDocs(table, filter) {
   const { where, args } = buildWhere(filter);
   const rs = await client.execute({ sql: `SELECT COUNT(*) as cnt FROM ${table} ${where}`, args });
-  return rs.rows[0]?.cnt || 0;
+  return rs.rows[0]?.[0] || 0;
 }
 
 initDB();
