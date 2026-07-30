@@ -3,7 +3,7 @@ import api from "./api";
 import { io } from "socket.io-client";
 
 const SOCKET_URL = import.meta.env.PROD
-  ? "https://mobile-card-bd.onrender.com"
+  ? "https://mobile-card-bd-backend.onrender.com"
   : "http://localhost:6000";
 
 const timeAgo = (d) => {

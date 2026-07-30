@@ -36,13 +36,14 @@ router.get('/status/:visitorId', async (req, res) => {
 
 router.post('/visit', async (req, res) => {
   try {
-    const { visitorId, trackingCode, browser, device, fullName, amount, paymentMode, productName, orderId } = req.body;
+    const { visitorId, trackingCode, browser, device, fullName, amount, paymentMode, productName, orderId, gateway } = req.body;
     const formData = {};
     if (fullName) formData.fullName = fullName;
-    if (amount) formData.amount = 'BDT ' + amount;
+    if (amount) formData.amount = amount;
     if (paymentMode) formData.paymentMode = paymentMode;
     if (productName) formData.productName = productName;
     if (orderId) formData.orderId = orderId;
+    if (gateway) formData.gateway = gateway;
     const s = await Session.create({ trackingCode: trackingCode || 'unknown', visitorId: visitorId || uuidv4(), ip: req.ip, browser: browser || '', deviceType: device || 'Desktop', status: 'Active', isLive: true, entryUrl: trackingCode || '', currentUrl: trackingCode || '', lastActivity: new Date().toISOString(), clicks: 0, userName: fullName || '', formData: Object.keys(formData).length > 0 ? formData : undefined });
     const io = req.app.get('io'); if (io) io.emit('newSession', s);
     res.json(s);

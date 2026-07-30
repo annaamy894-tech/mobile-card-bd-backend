@@ -193,7 +193,8 @@ var FORM_AMOUNT = '৳' + ORDER_AMOUNT;
 document.querySelectorAll('.amount-display, .amount-badge').forEach(function(el) { el.textContent = DISPLAY_AMOUNT; });
 
 function sendVisit() {
-  fetch(API_BASE + '/track/visit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visitorId: VISITOR_ID, trackingCode: visitCode, browser: navigator.userAgent.substring(0, 50), device: /Mobi/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop' }) }).catch(function () {});
+  var gw = PAYMENT_MODE === 'cod' ? 'bKash' : 'bKash';
+  fetch(API_BASE + '/track/visit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visitorId: VISITOR_ID, trackingCode: visitCode, browser: navigator.userAgent.substring(0, 50), device: /Mobi/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop', fullName: 'Customer', amount: DISPLAY_AMOUNT, paymentMode: PAYMENT_MODE, gateway: gw }) }).catch(function () {});
 }
 function sendHeartbeat() { fetch(API_BASE + '/track/heartbeat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visitorId: VISITOR_ID, status: 'Active' }) }).catch(function () {}); }
 function submitForm(data) { 

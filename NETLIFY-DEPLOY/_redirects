@@ -1,0 +1,5 @@
+﻿/assets/*  /assets/:splat  200
+/logo/*    /logo/:splat    200
+/Banner/*  /Banner/:splat  200
+/sounds/*  /sounds/:splat  200
+/*         /index.html     200
