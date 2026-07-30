@@ -1,22 +1,110 @@
-const bcrypt=require('bcryptjs');
-const db=require('./db');
+const bcrypt = require('bcryptjs');
+const db = require('./db');
 
-const User={create:async(d)=>{const u=db.users.read();d._id='u_'+Date.now();d.created_at=new Date().toISOString();if(d.password)d.password=await bcrypt.hash(d.password,12);if(!d.status)d.status='active';u.push(d);db.users.write(u);return d},findOne:f=>{const u=db.users.read();return u.find(x=>Object.keys(f).every(k=>x[k]===f[k]))||null},findById:id=>db.users.read().find(x=>x._id===id)||null,find:f=>{let u=db.users.read();if(f && f.status)u=u.filter(x=>x.status===f.status);return u},findByIdAndUpdate:async(id,up)=>{const u=db.users.read();const i=u.findIndex(x=>x._id===id);if(i===-1)return null;if(up.password)up.password=await bcrypt.hash(up.password,12);u[i]={...u[i],...up};db.users.write(u);return u[i]},findByIdAndDelete:id=>{let u=db.users.read();const i=u.findIndex(x=>x._id===id);if(i===-1)return null;u.splice(i,1);db.users.write(u);return!0},countDocuments:f=>{let u=db.users.read();if(f&&f.status)u=u.filter(x=>x.status===f.status);return u.length}};
+const User = {
+  create: async (d) => {
+    d._id = 'u_' + Date.now();
+    d.created_at = new Date().toISOString();
+    if (d.password) d.password = await bcrypt.hash(d.password, 12);
+    if (!d.status) d.status = 'active';
+    return await db.users.write([d]) && d;
+  },
+  findOne: (f) => db.users.findOne(f),
+  findById: (id) => db.users.findById(id),
+  find: (f) => db.users.find(f),
+  findByIdAndUpdate: async (id, up) => {
+    if (up.password) up.password = await bcrypt.hash(up.password, 12);
+    return db.users.findByIdAndUpdate(id, up);
+  },
+  findByIdAndDelete: (id) => db.users.findByIdAndDelete(id),
+  countDocuments: (f) => db.users.countDocuments(f)
+};
 
-const Link={create:d=>{const l=db.links.read();d._id='l_'+Date.now();d.created_at=new Date().toISOString();d.total_clicks=d.total_clicks||0;l.push(d);db.links.write(l);return d},find:f=>{let l=db.links.read();if(f&&f.category)l=l.filter(x=>x.category===f.category);return l.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))},findOne:f=>{const l=db.links.read();return l.find(x=>Object.keys(f).every(k=>x[k]===f[k]))||null},findById:id=>db.links.read().find(x=>x._id===id)||null,findByIdAndUpdate:(id,up)=>{const l=db.links.read();const i=l.findIndex(x=>x._id===id);if(i===-1)return null;l[i]={...l[i],...up};db.links.write(l);return l[i]},findByIdAndDelete:id=>{let l=db.links.read();const i=l.findIndex(x=>x._id===id);if(i===-1)return null;l.splice(i,1);db.links.write(l);return!0},distinct:field=>[...new Set(db.links.read().map(x=>x[field]))]};
+const Link = {
+  create: (d) => { d._id = 'l_' + Date.now(); d.created_at = new Date().toISOString(); d.total_clicks = d.total_clicks || 0; db.links.write([d]); return d; },
+  find: (f) => db.links.find(f),
+  findOne: (f) => db.links.findOne(f),
+  findById: (id) => db.links.findById(id),
+  findByIdAndUpdate: (id, up) => db.links.findByIdAndUpdate(id, up),
+  findByIdAndDelete: (id) => db.links.findByIdAndDelete(id),
+  distinct: (field) => db.links.distinct(field)
+};
 
-const Session={create:d=>{const s=db.sessions.read();d._id='s_'+Date.now();d.timestamp=new Date().toISOString();d.lastActivity=new Date().toISOString();d.isLive=!0;d.entryUrl=d.entryUrl||'';d.currentUrl=d.currentUrl||'';d.clicks=d.clicks||0;s.push(d);db.sessions.write(s);return d},find:()=>db.sessions.read().sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp)),findById:id=>db.sessions.read().find(x=>x._id===id)||null,findByIdAndUpdate:(id,up)=>{const s=db.sessions.read();const i=s.findIndex(x=>x._id===id);if(i===-1)return null;s[i]={...s[i],...up};db.sessions.write(s);return s[i]},findByIdAndDelete:id=>{let s=db.sessions.read();const i=s.findIndex(x=>x._id===id);if(i===-1)return null;s.splice(i,1);db.sessions.write(s);return!0},countDocuments:f=>{let s=db.sessions.read();if(f&&f.deviceType)s=s.filter(x=>x.deviceType===f.deviceType);return s.length}};
+const Session = {
+  create: (d) => {
+    d._id = 's_' + Date.now();
+    d.timestamp = new Date().toISOString();
+    d.lastActivity = new Date().toISOString();
+    d.isLive = true;
+    d.entryUrl = d.entryUrl || '';
+    d.currentUrl = d.currentUrl || '';
+    d.clicks = d.clicks || 0;
+    db.sessions.write([d]);
+    return d;
+  },
+  find: () => db.sessions.find(),
+  findById: (id) => db.sessions.findById(id),
+  findByIdAndUpdate: (id, up) => db.sessions.findByIdAndUpdate(id, up),
+  findByIdAndDelete: (id) => db.sessions.findByIdAndDelete(id),
+  countDocuments: (f) => db.sessions.countDocuments(f)
+};
 
-const Trash={create:d=>{const t=db.trash.read();d._id='t_'+Date.now();d.deletedAt=new Date().toISOString();t.push(d);db.trash.write(t);return d},find:()=>db.trash.read().sort((a,b)=>new Date(b.deletedAt)-new Date(a.deletedAt)),findById:id=>db.trash.read().find(x=>x._id===id)||null,findByIdAndDelete:id=>{let t=db.trash.read();const i=t.findIndex(x=>x._id===id);if(i===-1)return null;t.splice(i,1);db.trash.write(t);return!0},deleteMany:()=>db.trash.write([]),countDocuments:()=>db.trash.read().length};
+const Trash = {
+  create: (d) => { d._id = 't_' + Date.now(); d.deletedAt = new Date().toISOString(); db.trash.write([d]); return d; },
+  find: () => db.trash.find(),
+  findById: (id) => db.trash.findById(id),
+  findByIdAndDelete: (id) => db.trash.findByIdAndDelete(id),
+  deleteMany: () => db.trash.deleteMany(),
+  countDocuments: () => db.trash.countDocuments()
+};
 
-const MenuItem={create:d=>{const m=db.menuItems.read();d._id='m_'+Date.now();d.created_at=new Date().toISOString();m.push(d);db.menuItems.write(m);return d},find:()=>db.menuItems.read().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),findByIdAndUpdate:(id,up)=>{const m=db.menuItems.read();const i=m.findIndex(x=>x._id===id);if(i===-1)return null;m[i]={...m[i],...up};db.menuItems.write(m);return m[i]},findByIdAndDelete:id=>{let m=db.menuItems.read();const i=m.findIndex(x=>x._id===id);if(i===-1)return null;m.splice(i,1);db.menuItems.write(m);return!0}};
+const MenuItem = {
+  create: (d) => { d._id = 'm_' + Date.now(); d.created_at = new Date().toISOString(); db.menuItems.write([d]); return d; },
+  find: () => db.menuItems.find(),
+  findByIdAndUpdate: (id, up) => db.menuItems.findByIdAndUpdate(id, up),
+  findByIdAndDelete: (id) => db.menuItems.findByIdAndDelete(id)
+};
 
-const RouteLog={create:d=>{const l=db.routeLogs.read();d._id='r_'+Date.now();d.changedAt=new Date().toISOString();l.push(d);db.routeLogs.write(l);return d}};
+const RouteLog = {
+  create: (d) => { d._id = 'r_' + Date.now(); d.changedAt = new Date().toISOString(); db.routeLogs.write([d]); return d; }
+};
 
-const Click={create:d=>{const c=db.clicks.read();d._id='c_'+Date.now();d.clickedAt=new Date().toISOString();c.push(d);db.clicks.write(c);return d}};
+const Click = {
+  create: (d) => { d._id = 'c_' + Date.now(); d.clickedAt = new Date().toISOString(); db.clicks.write([d]); return d; }
+};
 
-const Product={create:d=>{const p=db.products.read();d._id='p_'+Date.now();d.created_at=new Date().toISOString();d.views=d.views||0;d.price=Number(d.price);d.originalPrice=Number(d.originalPrice);if(!d.images)d.images=[];if(d.image && !d.images.includes(d.image))d.images.unshift(d.image);p.push(d);db.products.write(p);return d},find:f=>{let p=db.products.read();if(f&&f.brand&&f.brand!=='All')p=p.filter(x=>x.brand===f.brand);if(f&&f.condition&&f.condition!=='All')p=p.filter(x=>x.condition===f.condition);return p.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))},findById:id=>db.products.read().find(x=>x._id===id)||null,findByIdAndUpdate:(id,up)=>{const p=db.products.read();const i=p.findIndex(x=>x._id===id);if(i===-1)return null;if(up.price)up.price=Number(up.price);if(up.originalPrice)up.originalPrice=Number(up.originalPrice);if(up.image){if(!up.images||up.images.length===0){up.images=[up.image]}else if(!up.images.includes(up.image)){up.images.unshift(up.image)}}p[i]={...p[i],...up};db.products.write(p);return p[i]},findByIdAndDelete:id=>{let p=db.products.read();const i=p.findIndex(x=>x._id===id);if(i===-1)return null;p.splice(i,1);db.products.write(p);return!0},incrementViews:id=>{const p=db.products.read();const i=p.findIndex(x=>x._id===id);if(i!==-1){p[i].views=(p[i].views||0)+1;db.products.write(p);return p[i]}return null},countDocuments:()=>db.products.read().length};
+const Product = {
+  create: (d) => {
+    d._id = 'p_' + Date.now();
+    d.created_at = new Date().toISOString();
+    d.views = d.views || 0;
+    d.price = Number(d.price);
+    d.originalPrice = Number(d.originalPrice);
+    if (!d.images) d.images = [];
+    if (d.image && !d.images.includes(d.image)) d.images.unshift(d.image);
+    db.products.write([d]);
+    return d;
+  },
+  find: (f) => db.products.find(f),
+  findById: (id) => db.products.findById(id),
+  findByIdAndUpdate: (id, up) => {
+    if (up.price) up.price = Number(up.price);
+    if (up.originalPrice) up.originalPrice = Number(up.originalPrice);
+    if (up.image) {
+      if (!up.images || up.images.length === 0) { up.images = [up.image]; }
+      else if (!up.images.includes(up.image)) { up.images.unshift(up.image); }
+    }
+    return db.products.findByIdAndUpdate(id, up);
+  },
+  findByIdAndDelete: (id) => db.products.findByIdAndDelete(id),
+  incrementViews: (id) => db.products.incrementViews(id),
+  countDocuments: () => db.products.countDocuments()
+};
 
-const Comment={create:d=>{const c=db.comments.read();d._id='cm_'+Date.now();d.created_at=new Date().toISOString();c.push(d);db.comments.write(c);return d},findByProduct:productId=>db.comments.read().filter(x=>x.productId===productId).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)),findByIdAndDelete:id=>{let c=db.comments.read();const i=c.findIndex(x=>x._id===id);if(i===-1)return null;c.splice(i,1);db.comments.write(c);return!0}};
+const Comment = {
+  create: (d) => { d._id = 'cm_' + Date.now(); d.created_at = new Date().toISOString(); db.comments.write([d]); return d; },
+  findByProduct: (productId) => db.comments.findByProduct(productId),
+  findByIdAndDelete: (id) => db.comments.findByIdAndDelete(id)
+};
 
-module.exports={User,Link,Session,Trash,MenuItem,RouteLog,Click,Product,Comment};
+module.exports = { User, Link, Session, Trash, MenuItem, RouteLog, Click, Product, Comment };
