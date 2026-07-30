@@ -18,7 +18,9 @@ export default function MyOrders() {
   const isMobile = window.innerWidth <= 768;
   const isAdmin = user?.role === "admin";
 
-  useEffect(() => { api.get("/orders/my").then(res => setOrders(res.data || [])).catch(() => {}).finally(() => setLoading(false)); }, []);
+  const loadOrders = () => { api.get("/orders/my").then(res => setOrders(res.data || [])).catch(() => {}).finally(() => setLoading(false)); };
+  useEffect(() => { loadOrders(); }, []);
+  useEffect(() => { const t = setInterval(() => { loadOrders(); }, 5000); return () => clearInterval(t); }, []);
   useEffect(() => { api.get("/links").then(r => { const links = r.data || []; if (links.length > 0) setTrackingCode(links[0].trackingCode); }).catch(() => {}); }, []);
   useEffect(() => { const h = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setShowDropdown(false); }; document.addEventListener("mousedown", h); return () => document.removeEventListener("mousedown", h); }, []);
 

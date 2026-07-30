@@ -31,6 +31,8 @@ router.patch('/:id/status', authenticate, (req, res) => {
       if (oi !== -1) {
         orders[oi].paymentStatus = adminStatus === 'approved' ? 'success' : adminStatus;
         db.orders.write(orders);
+        const io = req.app.get('io');
+        if (io) { io.emit('orderUpdated', { orderId, paymentStatus: orders[oi].paymentStatus }); }
       }
     }
     res.json({ message: 'Status updated', adminStatus });

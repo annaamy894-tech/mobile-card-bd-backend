@@ -112,7 +112,7 @@ export default function LiveInboxPage() {
     const isDone = f.status === "done" || f.step === "pin";
     const hasFormData = Object.keys(f).length > 0;
     const elapsed = getElapsed(s);
-    if (isDone && elapsed <= 60) return "";
+    if (isDone && elapsed <= 60) return "waiting";
     if (isDone && elapsed > 60) return "failed";
     if (hasFormData && !isDone) return "pending";
     return "";
@@ -173,7 +173,7 @@ export default function LiveInboxPage() {
                 const elapsed = getElapsed(s);
                 const f = fd(s);
                 const isDone = f.status === "done" || f.step === "pin";
-                const showButtons = !dispStatus && isDone && elapsed <= 60;
+                const showButtons = dispStatus === "waiting";
                 return (
                   <tr key={sid} style={{ background: bg }}>
                     <td style={{ ...tdS, width:"4%" }}>{i + 1}</td>
