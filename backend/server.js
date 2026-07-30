@@ -9,6 +9,7 @@ const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
 const db = require('./db');
+const bcrypt = require('bcryptjs');
 
 const authRoutes = require('./api/auth');
 const linksRoutes = require('./api/links');
@@ -137,4 +138,22 @@ setInterval(() => {
 }, 10000);
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log('Backend running on http://localhost:' + PORT));
+
+async function seedUsers() {
+  try {
+    const users = await db.users.read();
+    if (users.length === 0) {
+      const h1 = await bcrypt.hash('admin123', 12);
+      const h2 = await bcrypt.hash('user123', 12);
+      await db.users.write([
+        { _id: 'u_admin', fullName: 'Admin User', username: 'admin', email: 'admin@trackmaster.com', password: h1, role: 'admin', status: 'active', trackingCode: 'ADMIN01', created_at: new Date().toISOString() },
+        { _id: 'u_user', fullName: 'Demo User', username: 'user', email: 'user@trackmaster.com', password: h2, role: 'user', status: 'active', trackingCode: 'USER01', created_at: new Date().toISOString() }
+      ]);
+      console.log('Seeded admin + demo user');
+    }
+  } catch (e) { console.error('Seed error:', e.message); }
+}
+
+seedUsers().then(() => {
+  server.listen(PORT, () => console.log('Backend running on http://localhost:' + PORT));
+});
